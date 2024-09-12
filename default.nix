@@ -58,8 +58,15 @@ let
       pinentry-curses
       pwgen
       yk-scripts
+
       yubikey-manager
+      yubikey-manager-qt
       yubikey-personalization
+      #yubikey-personalization-qt
+      #yubikey-touch-detector
+      #yubikey-agent
+      #age-plugin-yubikey
+      #piv-agent
     ];
     services.udev.packages = [
       pkgs.yubikey-personalization
