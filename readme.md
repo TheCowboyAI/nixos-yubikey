@@ -1,6 +1,11 @@
   Create NixOS images suitable for initializing YubiKeys.
 
   This repository builds a bootable NixOS image that includes all of the software you need to initialize a YubiKey, and to configure it for use with Age, GnuPG and SSH. 
+
+  It is important to note: 
+  - This is not installing anything.
+  - It runs in tmpfs in ram.
+  - It leaves nothing behind.
   
   We follow recommended security practices by disabling network interfaces and running the configuration environment from an immutable ISO. The only way to write state to persistent storage is by explicit user action.
 
