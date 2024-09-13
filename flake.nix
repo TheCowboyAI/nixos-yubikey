@@ -8,7 +8,7 @@
   outputs = { self, disko, nixpkgs, ... }: {
     nixosConfigurations.nixos-yubikey = nixpkgs.legacyPackages.x86_64-linux.nixos [
       ./configuration.nix
-      ./disko.nix
+      disko.nixosModules.disko 
     ];
   };
 }

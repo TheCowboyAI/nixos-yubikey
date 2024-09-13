@@ -5,6 +5,7 @@
     [
       "${modulesPath}/profiles/hardened.nix"
       "${modulesPath}/installer/cd-dvd/installation-cd-minimal.nix"
+      ./disko.nix
     ];
 
   system.stateVersion = "24.05";
@@ -13,11 +14,15 @@
 
   # Boot settings for ISO
   #boot.isContainer = true;
-  boot.kernelPackages = pkgs + .linuxPackages;
+  boot.kernelPackages = pkgs.linuxPackages;
   boot.loader.grub.enable = false;
   boot.loader.systemd-boot.enable = lib.mkForce true;
   boot.loader.efi.canTouchEfiVariables = true;
   #boot.loader.efi.efiSysMountPoint = "/boot";
+
+  # enable filesystems
+  boot.initrd.availableKernelModules = [ "ext4" "vfat" "ahci" "nvme" "usb_storage" ];
+  boot.initrd.supportedFilesystems = [ "ext4" "vfat" ];
 
   networking.hostName = "nixos-yubikey";
 
@@ -61,7 +66,7 @@
     pinentry-curses
     pwgen
     gpg-tui
-    ssh-agent
+    openssh
 
     yubikey-manager
     yubikey-manager-qt
@@ -70,7 +75,7 @@
     #yubikey-touch-detector
     #yubikey-agent
     age-plugin-yubikey
-    #piv-agent
+    piv-agent
   ];
   services.udev.packages = [
     pkgs.yubikey-personalization
@@ -89,5 +94,23 @@
     shell = pkgs.zsh;
   };
 
-  services.getty.autologinUser = "yubikey";
-}
+  services.getty.autologinUser = lib.mkForce "yubikey";
+
+  systemd.services.setupYubikey = {
+    type = "oneshot";
+    script = ''
+      echo "Doing some stuff"
+    '';
+    wantedBy = [ "multi-user.target" "testYubikey.target" ];
+  };
+
+  # on completion: run tests
+  systemd.services.testYubikey = {
+    type = "oneshot";
+    script = ''
+      echo "Testing some stuff"
+    '';
+    after = "setupYubikey";
+    requires = "setupYubikey";
+    requiredBy = "testYubikey.target"  };
+  }
