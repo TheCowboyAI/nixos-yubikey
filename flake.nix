@@ -6,10 +6,15 @@
   };
 
   outputs = { self, disko, nixpkgs, ... }: {
-    nixosConfigurations.nixos-yubikey = nixpkgs.legacyPackages.x86_64-linux.nixos [
-      ./configuration.nix
-      disko.nixosModules.disko 
-    ];
+    nixosConfigurations = {
+      nixos-yubikey = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          disko.nixosModules.disko
+          ./configuration.nix
+        ];
+      };
+    };
   };
 }
 

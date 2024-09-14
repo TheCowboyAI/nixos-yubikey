@@ -1,14 +1,15 @@
 { lib, config, pkgs, modulesPath, ... }:
 
 {
+  system.stateVersion = "24.05";
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
   imports =
     [
       "${modulesPath}/profiles/hardened.nix"
-      "${modulesPath}/installer/cd-dvd/installation-cd-minimal.nix"
       ./disko.nix
+      #"${modulesPath}/installer/sd-card/sd-image-x86_64.nix"
     ];
-
-  system.stateVersion = "24.05";
 
   boot.kernelParams = [ ]; # "copytoram"
 
@@ -96,21 +97,20 @@
 
   services.getty.autologinUser = lib.mkForce "yubikey";
 
-  systemd.services.setupYubikey = {
-    type = "oneshot";
-    script = ''
-      echo "Doing some stuff"
-    '';
-    wantedBy = [ "multi-user.target" "testYubikey.target" ];
+  systemd.user.services.setupYubikey = {
+    script = builtins.toString ./reset-keys.sh;
+    wantedBy = [ "multi-user.target" ];
+    #onSuccess = []; # testYubikey
   };
 
   # on completion: run tests
-  systemd.services.testYubikey = {
-    type = "oneshot";
-    script = ''
-      echo "Testing some stuff"
-    '';
-    after = "setupYubikey";
-    requires = "setupYubikey";
-    requiredBy = "testYubikey.target"  };
-  }
+  # systemd.services.testYubikey = {
+  #   type = "oneshot";
+  #   script = ''
+  #     echo "Testing some stuff"
+  #   '';
+  #   after = ["setupYubikey.target"];
+  #   requires = ["setupYubikey.target"];
+  #   requiredBy = ["testYubikey.target"];
+  # };
+}
