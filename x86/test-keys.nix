@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-
+{ pkgs }:
+pkgs.writeShellScriptBin "test-keys" ''
 # Test Script for YubiKey Configuration
 # Run this script to verify that your YubiKey settings are correctly configured.
 
@@ -10,7 +10,7 @@ echo "Starting YubiKey Configuration Tests..."
 
 # Function to pause and wait for user input
 pause() {
-    read -p "Press [Enter] key to continue..."
+    read -p "Press [Enter] key to continue... Ctrl-C to quit."
 }
 
 # 1. Test OpenPGP Configuration
@@ -151,3 +151,4 @@ pause
 echo "All tests completed successfully!"
 
 exit 0
+''

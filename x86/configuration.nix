@@ -2,24 +2,23 @@
 
 {
   system.stateVersion = "24.05";
+
+  system.copySystemConfiguration = false;
+
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   imports =
     [
       "${modulesPath}/profiles/hardened.nix"
+      ./hardware-configuration.nix
       ./disko.nix
-      #"${modulesPath}/installer/sd-card/sd-image-x86_64.nix"
     ];
 
-  boot.kernelParams = [ ]; # "copytoram"
-
-  # Boot settings for ISO
-  #boot.isContainer = true;
+  boot.kernelParams = [ ];
   boot.kernelPackages = pkgs.linuxPackages;
   boot.loader.grub.enable = false;
   boot.loader.systemd-boot.enable = lib.mkForce true;
   boot.loader.efi.canTouchEfiVariables = true;
-  #boot.loader.efi.efiSysMountPoint = "/boot";
 
   # enable filesystems
   boot.initrd.availableKernelModules = [ "ext4" "vfat" "ahci" "nvme" "usb_storage" ];
@@ -77,14 +76,30 @@
     #yubikey-agent
     age-plugin-yubikey
     piv-agent
+
+    (import ./reset-keys.nix {inherit pkgs;})
+    (import ./test-keys.nix {inherit pkgs;})
   ];
+
   services.udev.packages = [
     pkgs.yubikey-personalization
   ];
 
   services.pcscd.enable = true;
 
-  programs.zsh.enable = true;
+  programs.zsh = {
+    enable = true;
+    enableCompletion = true;
+    autosuggestions.enable = true;
+    syntaxHighlighting.enable = true;
+    shellAliases = {
+      ll = "ls -la";
+    };
+
+    histSize = 10000;
+
+    loginShellInit = "";
+  };
 
   security.sudo.wheelNeedsPassword = false;
 
@@ -96,21 +111,4 @@
   };
 
   services.getty.autologinUser = lib.mkForce "yubikey";
-
-  systemd.user.services.setupYubikey = {
-    script = builtins.toString ./reset-keys.sh;
-    wantedBy = [ "multi-user.target" ];
-    #onSuccess = []; # testYubikey
-  };
-
-  # on completion: run tests
-  # systemd.services.testYubikey = {
-  #   type = "oneshot";
-  #   script = ''
-  #     echo "Testing some stuff"
-  #   '';
-  #   after = ["setupYubikey.target"];
-  #   requires = ["setupYubikey.target"];
-  #   requiredBy = ["testYubikey.target"];
-  # };
 }
