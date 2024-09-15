@@ -5,11 +5,10 @@
     disko.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, disko, nixpkgs, ... }@inputs: {
+  outputs = { self, disko, nixpkgs, ... }: {
     nixosConfigurations = {
       nixos-yubikey = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = inputs;
         modules = [
           disko.nixosModules.disko
           ./configuration.nix
