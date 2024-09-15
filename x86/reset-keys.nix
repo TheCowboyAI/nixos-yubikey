@@ -49,11 +49,12 @@ pkgs.writeShellScriptBin "reset-keys" ''
       echo "This will require confirmation."
 
       gpg --batch --yes --command-fd 0 --status-fd 1 --no-tty --card-edit <<EOF
-    admin
-    factory-reset
-    yes
-    quit
-    EOF
+admin
+factory-reset
+yes
+quit
+EOF
+
       echo "OpenPGP applet reset completed."
       # Reset PIV applet
       echo "Resetting PIV applet..."
@@ -68,19 +69,20 @@ pkgs.writeShellScriptBin "reset-keys" ''
     read_secret "Enter new OpenPGP Reset Code (optional)" OPENPGP_RESET_CODE
 
     gpg --batch --yes --command-fd 0 --status-fd 1 --no-tty --card-edit <<EOF
-    admin
-    passwd
-    1
-    $OPENPGP_USER_PIN
-    $OPENPGP_USER_PIN
-    3
-    $OPENPGP_ADMIN_PIN
-    $OPENPGP_ADMIN_PIN
-    4
-    $OPENPGP_RESET_CODE
-    $OPENPGP_RESET_CODE
-    quit
-    EOF
+admin
+passwd
+1
+$OPENPGP_USER_PIN
+$OPENPGP_USER_PIN
+3
+$OPENPGP_ADMIN_PIN
+$OPENPGP_ADMIN_PIN
+4
+$OPENPGP_RESET_CODE
+$OPENPGP_RESET_CODE
+quit
+EOF
+
     echo "OpenPGP PINs set."
   }
 
@@ -194,9 +196,9 @@ pkgs.writeShellScriptBin "reset-keys" ''
 
     # Run the GPG commands
     gpg --card-edit <<EOF
-    admin
-    generate
-    EOF
+admin
+generate
+EOF
 
     echo "PGP keys generated."
 
