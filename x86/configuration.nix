@@ -1,32 +1,24 @@
 { lib, config, pkgs, modulesPath, ... }:
-let 
-  reset-keys = import ./reset-keys.nix {inherit pkgs;};
-  test-keys = import ./test-keys.nix {inherit pkgs;};
-in 
+
 {
   system.stateVersion = "24.05";
 
   system.copySystemConfiguration = false;
 
-  # be sure to enable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   imports =
     [
       "${modulesPath}/profiles/hardened.nix"
-      ./hardware-configuration.nix # yes, we need it ot it fails to boot.
+      ./hardware-configuration.nix
       ./disko.nix
     ];
 
-  boot.kernelParams = [ ]; # "copytoram"
-
-  # Boot settings for ISO
-  #boot.isContainer = true;
+  boot.kernelParams = [ ];
   boot.kernelPackages = pkgs.linuxPackages;
   boot.loader.grub.enable = false;
   boot.loader.systemd-boot.enable = lib.mkForce true;
   boot.loader.efi.canTouchEfiVariables = true;
-  #boot.loader.efi.efiSysMountPoint = "/boot";
 
   # enable filesystems
   boot.initrd.availableKernelModules = [ "ext4" "vfat" "ahci" "nvme" "usb_storage" ];
@@ -85,8 +77,8 @@ in
     age-plugin-yubikey
     piv-agent
 
-    reset-keys
-    test-keys
+    (import ./reset-keys.nix {inherit pkgs;})
+    (import ./test-keys.nix {inherit pkgs;})
   ];
 
   services.udev.packages = [
@@ -102,14 +94,12 @@ in
     syntaxHighlighting.enable = true;
     shellAliases = {
       ll = "ls -la";
-      reset = "reset-keys";
-      test = "test-keys";
     };
 
     histSize = 10000;
 
+    loginShellInit = "";
   };
-  system.userActivationScripts.zshrc = "touch .zshrc";
 
   security.sudo.wheelNeedsPassword = false;
 

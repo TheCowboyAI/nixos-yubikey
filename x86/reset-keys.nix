@@ -1,12 +1,10 @@
-{ pkgs }: 
-  pkgs.writeShellScriptBin "reset-keys" ''
+{ pkgs }:
+pkgs.writeShellScriptBin "reset-keys" ''
     # YubiKey Setup Script
     # This script initializes a YubiKey for daily use on NixOS.
     # It will reinitialize the master key, set PINs, set up FIDO2, enable touch response for 2FA,
     # store an SSH key pair, and store a PGP key pair.
     # All actions are logged to yubikey_setup.log.
-
-    # NOTE: This will run on login and is built into configuration.nix
 
     # Exit immediately if a command exits with a non-zero status
     set -e
@@ -44,37 +42,26 @@
             esac
         done
     }
+  
+    reset_yubikey() {
+      # Reset OpenPGP applet
+      echo "Resetting OpenPGP applet..."
+      echo "This will require confirmation."
 
-    echo
-    echo "Step 1: Reinitialize the Master Key"
-    echo "WARNING: This will reset your YubiKey's OpenPGP and PIV applets, erasing all data."
-    if confirm "Do you want to proceed with resetting the YubiKey?"; then
-        # Reset OpenPGP applet
-        echo "Resetting OpenPGP applet..."
-        echo "This will require confirmation."
-
-        gpg --batch --yes --command-fd 0 --status-fd 1 --no-tty --card-edit <<EOF
+      gpg --batch --yes --command-fd 0 --status-fd 1 --no-tty --card-edit <<EOF
     admin
     factory-reset
     yes
     quit
     EOF
-        echo "OpenPGP applet reset completed."
+      echo "OpenPGP applet reset completed."
+      # Reset PIV applet
+      echo "Resetting PIV applet..."
+      ykman piv reset -f
+      echo "PIV applet reset completed."
+  }
 
-        # Reset PIV applet
-        echo "Resetting PIV applet..."
-        ykman piv reset -f
-        echo "PIV applet reset completed."
-    else
-        echo "YubiKey reset skipped."
-    fi
-
-    pause
-
-    echo
-    echo "Step 2: Set the PINs"
-
-    # Set OpenPGP PINs
+  set_openpgp_pins() {
     echo "Setting OpenPGP PINs..."
     read_secret "Enter new OpenPGP User PIN (6 digits)" OPENPGP_USER_PIN
     read_secret "Enter new OpenPGP Admin PIN (8 digits)" OPENPGP_ADMIN_PIN
@@ -95,10 +82,9 @@
     quit
     EOF
     echo "OpenPGP PINs set."
+  }
 
-    pause
-
-    # Set PIV PIN and PUK
+  set_piv() {
     echo
     echo "Setting PIV PIN and PUK..."
     read_secret "Enter new PIV PIN (6-8 digits)" PIV_PIN
@@ -107,22 +93,18 @@
     ykman piv change-pin --pin 123456 --new-pin "$PIV_PIN"
     ykman piv change-puk --puk 12345678 --new-puk "$PIV_PUK"
     echo "PIV PIN and PUK set."
+  }
 
-    pause
-
-    # Set FIDO2 PIN
+  set_fido2_pin() {
     echo
     echo "Setting FIDO2 PIN..."
     read_secret "Enter new FIDO2 PIN" FIDO2_PIN
 
     ykman fido access change-pin --new-pin "$FIDO2_PIN"
     echo "FIDO2 PIN set."
-
-    pause
-
-    echo
-    echo "Step 3: Setup FIDO2"
-
+  }
+  
+  enable_fido2() {
     # Ensure FIDO2 application is enabled
     echo "Ensuring FIDO2 application is enabled..."
     if ykman config list | grep -q 'FIDO2.*Enabled'; then
@@ -131,12 +113,9 @@
         ykman config enable fido2
         echo "FIDO2 application enabled."
     fi
+  }
 
-    pause
-
-    echo
-    echo "Step 4: Setup Touch Response for 2FA"
-
+  enable_pgp_touch() {
     # Set touch policy for OpenPGP keys
     echo "Setting touch policy for OpenPGP keys..."
 
@@ -144,33 +123,19 @@
     ykman openpgp keys set-touch enc on --admin-pin "$OPENPGP_ADMIN_PIN"
     ykman openpgp keys set-touch aut on --admin-pin "$OPENPGP_ADMIN_PIN"
     echo "Touch policy for OpenPGP keys set."
+  }
 
-    pause
-
-    # Set touch policy for PIV Authentication (Slot 9a)
-    echo
-    echo "Setting touch policy for PIV Authentication (Slot 9a)..."
-
+  enable_piv_touch() {
     ykman piv keys set-touch-policy 9a on --management-key default --pin "$PIV_PIN"
     echo "Touch policy for PIV Authentication set."
+  }
 
-    pause
-
-    # Set touch policy for FIDO2 operations
-    echo
-    echo "Setting touch policy for FIDO2 operations..."
-
+  enable_fido2_touch() {
     ykman fido access set-pin-retries --pin-retries 8 --uv-retries 8 --pin "$FIDO2_PIN"
     echo "Touch policy for FIDO2 operations set."
+  }
 
-    pause
-
-    echo
-    echo "Step 5: Store an SSH Private/Public Key Pair"
-
-    # Option 1: Using PIV for SSH Authentication
-
-    if confirm "Do you want to use PIV for SSH authentication?"; then
+  enable_ssh_auth(){
         # Generate a new key on Slot 9a
         echo "Generating new key on PIV Slot 9a..."
 
@@ -213,15 +178,9 @@
         echo "Your SSH public key is:"
         ssh-add -L
         echo "Copy this public key to your authorized_keys on remote servers."
-    else
-        echo "Skipping PIV for SSH authentication."
-    fi
+  }
 
-    pause
-
-    echo
-    echo "Step 6: Store a PGP Private/Public Key Pair"
-
+  enable_pgp_pair() {
     echo "Generating PGP keys on the YubiKey..."
 
     # Read user details
@@ -245,9 +204,108 @@
     echo "Exporting your public key..."
     gpg --armor --export "$EMAIL" > publickey.asc
     echo "Public key exported to publickey.asc"
+  }
+
+    echo
+    echo "Step 1: Reinitialize the Master Key"
+    echo "WARNING: This will reset your YubiKey's OpenPGP and PIV applets, erasing all data."
+
+    if confirm "Do you want to proceed with resetting the YubiKey?"; then
+        reset_yubikey
+    else
+        echo "YubiKey reset skipped."
+    fi
+
+    echo
+    echo "Step 2: Set the PINs"
+
+    # Set OpenPGP PINs
+    if confirm "Do you want to proceed with Setting OpenPGP PINs?"; then
+        set_openpgp_pins
+    else
+        echo "YubiKey reset skipped."
+    fi
+
+    echo
+    echo "Step 3: Set PIV PINs and PUK"
+
+    # Set PIV PIN and PUK
+    if confirm "Do you want to proceed with Setting PIV PINs and PUK?"; then
+        set_piv
+    else
+        echo "Set PIV skipped."
+    fi
+
+    echo
+    echo "Step 4: Set the FIDO2 PIN"
+
+    # Set FIDO2 PIN
+    if confirm "Do you want to proceed with Setting the FIDO PIN?"; then
+        set_fido2_pin
+    else
+        echo "Set FIDO2 skipped."
+    fi
+
+    echo
+    echo "Step 5: Enable FIDO2"
+
+    if confirm "Do you want to proceed with Enabling the FIDO2?"; then
+        enable_fido2
+    else
+        echo "Set FIDO2 skipped."
+    fi
+
+    echo
+    echo "Step 6: Setup Touch Response for 2FA"
+
+    if confirm "Do you want to proceed with Enabling Touch for 2FA?"; then
+        enable_pgp_touch
+    else
+        echo "Set PGP Touch skipped."
+    fi
+
+    # Set touch policy for PIV Authentication (Slot 9a)
+    echo
+    echo "Step 7: Setting touch policy for PIV Authentication (Slot 9a)..."
+
+    if confirm "Do you want to proceed with Enabling Touch for PIV?"; then
+        enable_piv_touch
+    else
+        echo "Set PIV Touch skipped."
+    fi
+
+    # Set touch policy for FIDO2 operations
+    echo
+    echo "Step 8: Setting touch policy for FIDO2 operations..."
+
+    if confirm "Do you want to proceed with Enabling Touch for FIDO2?"; then
+        enable_fido2_touch
+    else
+        echo "Set FIDO2 Touch skipped."
+    fi
+
+    echo
+    echo "Step 9: Store an SSH Private/Public Key Pair"
+
+    # Using PIV for SSH Authentication
+    if confirm "Do you want to use PIV for SSH authentication? NOTE: This Overwrites Previous PIV Touch"; then
+        enable_ssh_auth
+    else
+        echo "Skipping PIV for SSH authentication."
+    fi
+
+    echo
+    echo "Step 10: Store a PGP Private/Public Key Pair"
+
+    if confirm "Do you want to store a PGP Key Pair?"; then
+        enable_pgp_pair
+    else
+        echo "Skipping PGP Pair."
+    fi
 
     echo
     echo "YubiKey Setup Script completed at $(date)"
     echo "All steps completed successfully!"
     echo "----------------------------------------"
-  ''
+
+''
