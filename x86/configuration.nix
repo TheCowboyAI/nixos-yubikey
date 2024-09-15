@@ -1,14 +1,21 @@
 { lib, config, pkgs, modulesPath, ... }:
-
+let 
+  reset-keys = import ./reset-keys.nix {inherit pkgs;};
+  test-keys = import ./test-keys.nix {inherit pkgs;};
+in 
 {
   system.stateVersion = "24.05";
+
+  system.copySystemConfiguration = false;
+
+  # be sure to enable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   imports =
     [
       "${modulesPath}/profiles/hardened.nix"
+      ./hardware-configuration.nix # yes, we need it ot it fails to boot.
       ./disko.nix
-      #"${modulesPath}/installer/sd-card/sd-image-x86_64.nix"
     ];
 
   boot.kernelParams = [ ]; # "copytoram"
@@ -77,14 +84,32 @@
     #yubikey-agent
     age-plugin-yubikey
     piv-agent
+
+    reset-keys
+    test-keys
   ];
+
   services.udev.packages = [
     pkgs.yubikey-personalization
   ];
 
   services.pcscd.enable = true;
 
-  programs.zsh.enable = true;
+  programs.zsh = {
+    enable = true;
+    enableCompletion = true;
+    autosuggestions.enable = true;
+    syntaxHighlighting.enable = true;
+    shellAliases = {
+      ll = "ls -la";
+      reset = "reset-keys";
+      test = "test-keys";
+    };
+
+    histSize = 10000;
+
+  };
+  system.userActivationScripts.zshrc = "touch .zshrc";
 
   security.sudo.wheelNeedsPassword = false;
 
@@ -96,21 +121,4 @@
   };
 
   services.getty.autologinUser = lib.mkForce "yubikey";
-
-  systemd.user.services.setupYubikey = {
-    script = builtins.toString ./reset-keys.sh;
-    wantedBy = [ "multi-user.target" ];
-    #onSuccess = []; # testYubikey
-  };
-
-  # on completion: run tests
-  # systemd.services.testYubikey = {
-  #   type = "oneshot";
-  #   script = ''
-  #     echo "Testing some stuff"
-  #   '';
-  #   after = ["setupYubikey.target"];
-  #   requires = ["setupYubikey.target"];
-  #   requiredBy = ["testYubikey.target"];
-  # };
 }
