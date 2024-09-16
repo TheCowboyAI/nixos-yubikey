@@ -77,15 +77,42 @@
     age-plugin-yubikey
     piv-agent
 
-    (import ./reset-keys.nix {inherit pkgs;})
-    (import ./test-keys.nix {inherit pkgs;})
+    # import our scripts, a menu curses appears by running setup
+    # we don't want a full autostart, motd can tell us to run setup.
+    (import ./setup-keys.nix { inherit pkgs; })
+    (import ./test-keys.nix { inherit pkgs; })
   ];
 
-  services.udev.packages = [
-    pkgs.yubikey-personalization
+  services.udev.packages = with pkgs; [
+    yubikey-personalization
+    libu2f-host
   ];
 
   services.pcscd.enable = true;
+
+  programs.gnupg.agent = {
+    enable = true;
+    pinentryFlavor = "curses";
+    enableSSHSupport = true;
+    
+  };
+
+  # GPG chooses socket directory based on GNUPGHOME.
+  # If any other user wants to use gpg-agent they are out of luck,
+  # unless they modify the socket in their profile and those are locked.
+  systemd.user.sockets.gpg-agent = {
+    listenStreams = let
+      user = "yubikey";
+      socketDir = pkgs.runCommand "gnupg-socketdir" {
+        nativeBuildInputs = [ pkgs.python3 ];
+      } ''
+        python3 ${../../common/gnupgdir.py} '/home/${user}/.local/share/gnupg' > $out
+      '';
+    in [
+      "" # unset
+      "%t/gnupg/${builtins.readFile socketDir}/S.gpg-agent"
+    ];
+  };
 
   programs.zsh = {
     enable = true;
@@ -97,9 +124,10 @@
     };
 
     histSize = 10000;
-
-    loginShellInit = "";
+    #loginShellInit = " ";
   };
+  # the above should work, but doesn't
+  system.activationScripts.script.text = "touch ~/.zshrc";
 
   security.sudo.wheelNeedsPassword = false;
 
