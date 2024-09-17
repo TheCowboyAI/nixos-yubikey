@@ -1,5 +1,5 @@
-{ pkgs }:
-pkgs.writeShellScriptBin "setup-keys" ''
+#!/bin/bash
+
 # YubiKey Setup Script
 # This script initializes a YubiKey for daily use on NixOS.
 # It is function-driven and menu-driven.
@@ -330,4 +330,3 @@ function load() {
 # Start the script
 main
 
-''
