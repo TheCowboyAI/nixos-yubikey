@@ -13,15 +13,12 @@
       ./disko.nix
     ];
 
-  boot.kernelParams = [ ]; # "copytoram"
+  boot.kernelParams = [ ]; # 
 
-  # Boot settings for ISO
-  #boot.isContainer = true;
   boot.kernelPackages = pkgs.linuxPackages;
   boot.loader.grub.enable = false;
   boot.loader.systemd-boot.enable = lib.mkForce true;
   boot.loader.efi.canTouchEfiVariables = true;
-  #boot.loader.efi.efiSysMountPoint = "/boot";
 
   # enable filesystems
   boot.initrd.availableKernelModules = [ "ext4" "vfat" "ahci" "nvme" "usb_storage" ];
@@ -72,11 +69,8 @@
     openssh
 
     yubikey-manager
-    yubikey-manager-qt
     yubikey-personalization
-    #yubikey-personalization-qt
-    #yubikey-touch-detector
-    #yubikey-agent
+
     age-plugin-yubikey
     piv-agent
   ];
@@ -99,20 +93,4 @@
 
   services.getty.autologinUser = lib.mkForce "yubikey";
 
-  systemd.user.services.setupYubikey = {
-    script = builtins.toString ./reset-keys.sh;
-    wantedBy = [ "multi-user.target" ];
-    #onSuccess = []; # testYubikey
-  };
-
-  # on completion: run tests
-  # systemd.services.testYubikey = {
-  #   type = "oneshot";
-  #   script = ''
-  #     echo "Testing some stuff"
-  #   '';
-  #   after = ["setupYubikey.target"];
-  #   requires = ["setupYubikey.target"];
-  #   requiredBy = ["testYubikey.target"];
-  # };
 }
