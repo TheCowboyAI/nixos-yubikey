@@ -1,0 +1,51 @@
+# we are in a safe environment, export all these to env vars
+set export
+
+# CHANGE THIS
+IDENTITY := "Example Name <example@example.com>"
+KEY_TYPE := "rsa4096"
+EXPIRATION := "2y"
+CERTIFY_PASS := $(LC_ALL=C tr -dc 'A-Z1-9' < /dev/urandom | \
+tr -d "1IOS5U" | fold -w 30 | sed "-es/./ /"{1..26..5} | \
+cut -c2- | tr " " "-" | head -1) ; printf "\n$CERTIFY_PASS\n\n"
+
+
+default:
+  echo "info   : Info on a YubiKey \
+certkey: Set Primary Key for issuing Subkeys \
+subkeys: Make and import Subkeys
+piv    : Set PIN, PUK, and Management key \
+fido   : Set Pins, enable/disable touch response for 2FA \
+ssh    : Store an SSH key pair \
+pgp    : Store a PGP key pair \
+test   : Test a YubiKey \
+reset  : Reset everything to YubiKey defaults \
+load   : Load data from .secrets.yaml and apply it \
+export : Export Public Keys
+" 
+
+info:
+
+certkey:
+  gpg --batch --passphrase "$CERTIFY_PASS" \
+    --quick-generate-key "$IDENTITY" "$KEY_TYPE" cert never
+  
+  KEYID := $(gpg -k --with-colons "$IDENTITY" | awk -F: '/^pub:/ { print $5; exit }')
+
+  KEYFP := $(gpg -k --with-colons "$IDENTITY" | awk -F: '/^fpr:/ { print $10; exit }')
+
+  printf "\nKey ID: %40s\nKey FP: %40s\n\n" "$KEYID" "$KEYFP"
+
+piv:
+
+fido:
+
+ssh:
+
+pgp:
+
+reset:
+
+load:
+
+export:
