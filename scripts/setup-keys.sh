@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # YubiKey Setup Script
 # This script initializes a YubiKey for daily use on NixOS.
 # It is function-driven and menu-driven.
@@ -105,9 +103,47 @@ confirm() {
 }
 
 list_serials() {
-    echo "Connected key:"
-    ykman list --serials
-    echo
+    echo "Connected YubiKey(s):"
+    serials=$(ykman list --serials)
+    if [ -z "$serials" ]; then
+        echo "No YubiKeys detected."
+        return 1
+    fi
+
+    for serial in $serials; do
+        echo "Info for YubiKey with serial $serial:"
+        ykman --device "$serial" info
+        echo
+    done
+}
+
+# creates a random password for use as a master password
+random_pass() {
+  export CERTIFY_PASS=$(LC_ALL=C tr -dc 'A-Z1-9' < /dev/urandom | \
+  tr -d "1IOS5U" | fold -w 30 | sed "-es/./ /"{1..26..5} | \
+  cut -c2- | tr " " "-" | head -1) ; printf "\n$CERTIFY_PASS\n\n">>$LOGFILE
+}
+
+create_cert_key() {
+    gpg --batch --passphrase "$CERTIFY_PASS" \
+    --quick-generate-key "$IDENTITY" "$KEY_TYPE" cert never
+
+    export KEYID=$(gpg -k --with-colons "$IDENTITY" | awk -F: '/^pub:/ { print $5; exit }')
+    export KEYFP=$(gpg -k --with-colons "$IDENTITY" | awk -F: '/^fpr:/ { print $10; exit }')
+    printf "\nKey ID: %40s\nKey FP: %40s\n\n" "$KEYID" "$KEYFP" # >>$LOGFILE
+}
+
+backup_subkeys() {
+    gpg --output $GNUPGHOME/$KEYID-Certify.key \
+    --batch --pinentry-mode=loopback --passphrase "$CERTIFY_PASS" \
+    --armor --export-secret-keys $KEYID
+
+    gpg --output $GNUPGHOME/$KEYID-Subkeys.key \
+    --batch --pinentry-mode=loopback --passphrase "$CERTIFY_PASS" \
+    --armor --export-secret-subkeys $KEYID
+
+    gpg --output $GNUPGHOME/$KEYID-$(date +%F).asc \
+    --armor --export $KEYID
 }
 
 reset_yubikey() {
@@ -275,9 +311,8 @@ enable_pgp_pair() {
 }
 
 function info() {
-    # Info on a YubiKey
-    echo "Executing 'info' function: Displaying YubiKey information..."
-    ykman list --serials | ykman --device %1 info
+    # Info on YubiKeys
+    list_serials
 }
 
 function reset() {
@@ -329,4 +364,3 @@ function load() {
 
 # Start the script
 main
-

@@ -1,41 +1,55 @@
 # Initialize Yubikey Set
 This is our process for creating Yubikeys in a safe manner.
 
+We want a few things on our Yubikey.
+
+Set PIV
+Set OpenSSL Touch
+
+### Subkeys
+- Signature Key
+- Encryption Key
+- Authentication Key
+- SSL Root CA
+
+From these 3 we will generate other keys that we actually give out.
+
+These 3 Primary Keys should NOT be use for anything other than creating other keys.
+This includes setting the PIV Touch Key...
+The PIV Touch Key should be easily revocable and if it's a primary key, you need a new Yubikey.
+
 We have created a nix Flake that will create a bootable usb or sd card to place a machine into a safe, AIR-GAPPED Environment.
 
 The Environment is very minimal on purpose.
 The ONLY purpose to run is to initialize a set of Yubikeys and therefore, it is hardened and anything not required is removed or blocked.
 
-This is not a general recovery usb stick.
+This is not a general recovery usb image.
 
-It is purpose driven and is ephemeral activity.
+It is purpose driven and activity is ephemeral.
 
 NixOS is Determistic, and I wanted a deterministic process to setup Yubikeys.
 This is a process we can repeat for many Yubikeys and be confident it is correct and safe to use.
+If you need to setup a single key, this is fine, but a tad complex.
+This is intended to be used when setting up many keys for an Organization or Family.
 
 NOTE: Yubikey sets are not clones...
 They are "registered" together for certain activities.
 Sometimes they have the same Credentials applied to them, but they remain distinct keys.
 
-### What we set:
-  - PIV (Personal Identity Verification)
-    - PIN (personal identification number)
-    - PUK (PIN unlock code)
-    - management key
-  - FIDO (Fast IDentity Online)
-    - 
-
-The intent is that you boot this usb...
+The intent is that you boot to this flake...
 - Follow the instructions provided, or provide a secrets.yaml file.
-- Turn OFF the machine we used.
-- unplug the usb.
+- When complete: Turn OFF the machine we used.
+- unplug the boot device
 
-- reboot into a working environment (not the usb).
+- reboot into a working environment (not yubikey image, it has no network).
 - [Register Accounts with all Providers](https://www.yubico.com/works-with-yubikey/catalog/google-accounts/)
-- store the usb device and your backup Yubikey in a safe place.
+- store the boot device and your backup Yubikey in a safe place.
 
 This provides an audit trail for how the key was made.
 It DOES NOT provide any keys inside the Yubikey, those solely reside on the Yubikey.
+
+If you make Secrets you want to manage, store the on the boot device.
+
 Some information, we can set deterministically, in other words, we write it down.
 just because I wrote it in a YAML file doesn't make it less secure.
 
@@ -46,6 +60,11 @@ Savvy users will store credentials in FIDO and will update the key from time to 
 
 Usually the Owner of the key can do this.
 
+This IS an appropriate environment in which to do so.
+You will always know that this build works with your key. 
+
+If you forgot the keys, sure pull it out and look them up, that is it's purpose.
+
 ### Why do we need hardening?
 
 We want an environment as safe as writing a bunch of symbols on a piece of paper and hiding the paper.
@@ -54,7 +73,7 @@ Of course paper can't talk to a machine, but you can copy it by taking a picture
 
 Once you create a PrivateKey on a Yubikey, it ONLY resides there and cannot be copied, cloned, or duplicated in any way.
 
-The PrivateKey can be authenticated, but not copied or placed in memory somewhere.
+The PrivateKey can be authenticated, but not copied or exported somewhere.
 
 The reason we harden the system this is created on is that we want to be as certain as reasonable that this Key is not tampered with.
 
@@ -72,38 +91,37 @@ The Master Key is generally used "once" when creating a Domain. After that, the 
 
 Your GnuPG master key is also your “identity” among every PGP user. If you loose your master key or if your key is compromised you need to rebuild your identity and reputation from scratch. Instead, if a subkey is compromised, you can revoke the subkey (using your master key) and generate a new subkey.
 
-For any Online Account, or account with rotating keys, we use these subkeys.
-
 This can also be our Personal Physical Authenticator.
 It can be asked to reply for verification or for two factor authentication.
+For any Online Account, or account with rotating keys, we use these subkeys.
 
 This makes human verification very simple in a workflow.
 
-You should not "recycle" Yubikeys.
+You should not "recycle" Yubikeys, but rotating keys and passwords is pretty common.
 
 If these are corporate devices, destroy them, don't reset them.
 
-If this is a personal device, you may need to reset things, and locking it is more of a personal choice about when you do it. We would recommend locking it when you are certain it is setup the way you need it.
+If this is a personal device, locking it is more of a personal choice about when you do it. We would recommend locking it when you are certain it is setup the way you need it.
+
+Locking it means having all the PINs set and a Configuration PIN set.
 
 Test and verify everything you want to connect.
 
-Then lock it.
-
-If you lose it, destroy it. Don't reset it.
+If you lose it, destroy it. Don't reset it, revoke the subkeys and make new ones.
 
 ## Yubikey capabilities
 Currently Yubikey 5 Series is state of the art.
 
 It has the following:
   - Immutable Serial Number
+  - PIV
+  - OpenPGP
   - FIDO
   - OATH
-  - OpenPGP
   - OTP
-  - PIV
 
 The Serial Number is world readable...
-It's actually written on the yubikey.
+It's actually written on the outside of most yubikeys.
 Don't use it for anything but a PUBLIC identifier.
 
 We will setup several keys, then optionally lock the devices, which will make it useless without the unlock pin.
@@ -128,20 +146,27 @@ This way, we can create Organization Keys and attach policies to them.
 
 Personal Keys are then issued to individuals with a revocable shared Organizational Key.
 
-This allows for linked Organizational Keys to replace or rotate Personal Keys.
-
 This does in fact get pretty complex and the industry changes fairly fast.
 
 We want to generate a lot of One Time Responses from a source we trust, that is the Yubikey.
 
 Using Organizationl+Personal revocable shared keys accomplishes what we are after.
 
+You could make subkeys for all your Providers, that is up to your Security Policy.
+We recommend at least two of each with 2 year expirations.
+
 This is not meant to be a comprehensive security analysis of the world, we all have opinions on what is "safe" and what is "extreme".
 
 ## Standard settings
 We will set these:
+  - Certify Key
+    - the key you use to generate Subkeys
+  - Subkeys
+    - Signing
+    - Encryption
+    - Authentication
   - FIDO
-    - WebAuth and Microsoft
+    - WebAuth and Microsoft Hello
     - Credentials
       - Passkeys
       - Username/Passwords
@@ -157,19 +182,35 @@ We will set these:
     - The Yubico Authenticator App generates TOTP (Timed One Time passwords) from the Yubikey.
   - PIV
     - Smartcard Operation
+    - PIN
+    - PUK
+    - management key
 
 ## SECRETS
-.secrets.yaml is in .gitignore for a reason.
-
-yes, this is an open file, no it doesn't have to be.
-
 Honestly, a text file on an encrypted offline SD device, kept off site in a fireproof safe is usually enough.
 
 We can just change [./x86/disko.nix] and encrypt the disk. Doing this while offline at creation time is "just enough security" for most of us.
 
 If you need more, you know it and will do more.
 
+.secrets.yaml is in .gitignore for a reason.
+yes, this is an open file, no it doesn't have to be, but we just said, the disk can be encrypted when needed.
+
+copy [./.secrets.sample.yaml] to ./.secrets.yaml
+edit the file to your liking and run
+```bash
+setup
+```
 Gathering all these credentials at once, then maintaining them ON the Key as Credentials is a fairly simple process where you just need your pin.
+
+## Generate a Certificate Key
+The Certificate Key is your master key.
+You want to generate this randomly and store it in an encrypted way.
+It will print out on screen once and you need to copy it.
+
+## Subkeys
+Generate Signature, Encryption and Authentication Subkeys using the previously configured key type, passphrase and expiration
+
 SSH Keys are a good example, we need a bunch of them in IT and if they are all on my key, then no matter what device I am on, the key can be available.
 
 If you have tons of credentials, then use a Password Manager such as Bitwarden or 1Password and use the Yubikey as the 2FA Device. Usually this only works for web based traffic as it only has triggers in the browser.
@@ -177,9 +218,27 @@ If you have tons of credentials, then use a Password Manager such as Bitwarden o
 We have limited "slots" on the Yubikey to store credentials of different kinds.
 We aren't going to save every credential you use here, just high use and highly sensitive ones.
 
-We are setting PIV last because that locks the device and sets some unchangeable slots.
+We are not trying to take over what ykman does...
+We do want to streamline the process of doing this with a hundred keys.
+
+You will most likely have changes to this process.
+
+### Registration
+Registration is the process of activating a device with a provider.
+
+There are many options depending on the provider.
+
+Follow these general guidelines, but remember that to register multiple keys with most providers, you need all the keys available at the same time.
+
+If you are storing the backup key in a safe, you don't want to be pulling it out to update it all the time.
+
+This is why we recommend using SUBKEYS, then any of the devices available in the subkey just work.
 
 ### FIDO2
+  - PIN (4-63 alpha characters, different than PIV PIN)
+  - min length (6 chars)
+
+
 >If you are being prompted for a FIDO2 PIN and don't know what it is, you will need to reset the YubiKey's FIDO2 function to blank/reset the PIN. Be advised! - this procedure will effectively unregister the key with every account it has been registered with using FIDO U2F or FIDO2, so we strongly recommend taking precautionary measures (see below) prior to resetting.
 
 >If the FIDO2 PIN is entered incorrectly 3 times in a row, the key will need to be reinserted before it will accept additional PIN attempts (reinserting "reboots" the device). If the PIN is entered incorrectly a total of 8 times in a row, the FIDO2 function will become blocked, requiring that it be reset.
@@ -192,6 +251,10 @@ Yeah, this kind of thing MUST be a personal decision.
 Write it on paper, or put it somewhere offline.
 You won't be writing anything but pins. A FIDO2 PIN can be 63 characters and most of us can only remember 7... Short term.
 
+FIDO can have several credentials and fingerprints on bio devices.
+
+You should add those after going through this setup, and before you register the devices.
+
 ### PIV
 Special characters are [supported on the Yubikey](https://docs.yubico.com/yesdk/users-manual/application-piv/pin-puk-mgmt-key.html); don't use them, they aren't WebAuthn compliant.
 
@@ -202,9 +265,25 @@ The Defaults are:
 
 **AT THE LEAST**, you need to change these.
 
+The rest are up to your usage needs, Bio and NFC only apply to those device.
+
 ### OAUTH
 
+Add an account, with the secret key f5up4ub3dw and the name yubico, that requires touch:
+
+```bash
+ykman oath accounts add yubico f5up4ub3dw --touch
+```
+
+If we find these in secrets.yaml, we add them
+  - OAUTH:
+    - yubico: # add oauth account named yubico
+      - secret: some_secret_passphrase
+      - touch: true
+
 ### OTP
+
+
 
 ### SSH
 
