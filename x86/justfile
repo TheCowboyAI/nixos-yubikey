@@ -1,51 +1,93 @@
 # we are in a safe environment, export all these to env vars
+# edit this file after booting and it serves as a backup for pins
+# the randoms are printed, but not saved
 set export
-
-# CHANGE THIS
-IDENTITY := "Example Name <example@example.com>"
-KEY_TYPE := "rsa4096"
-EXPIRATION := "2y"
-CERTIFY_PASS := $(LC_ALL=C tr -dc 'A-Z1-9' < /dev/urandom | \
-tr -d "1IOS5U" | fold -w 30 | sed "-es/./ /"{1..26..5} | \
-cut -c2- | tr " " "-" | head -1) ; printf "\n$CERTIFY_PASS\n\n"
-
 
 default:
   echo "info   : Info on a YubiKey \
+gpgpin : Set GPG Pins (separate from PIV)
 certkey: Set Primary Key for issuing Subkeys \
-subkeys: Make and import Subkeys
-piv    : Set PIN, PUK, and Management key \
-fido   : Set Pins, enable/disable touch response for 2FA \
-ssh    : Store an SSH key pair \
-pgp    : Store a PGP key pair \
+subkeys: Make and import Subkeys \
 test   : Test a YubiKey \
 reset  : Reset everything to YubiKey defaults \
-load   : Load data from .secrets.yaml and apply it \
 export : Export Public Keys
 " 
 
 info:
+  gpg --card-status
+
+pin_retries:
+  ykman openpgp access set-retries $RETRIES $RETRIES $RETRIES -f -a $GPG_PIN
+  printf "Pin Retries set to $RETRIES" | tee -a $LOGFILE
+setattrs:
+  gpg --command-fd=0 --pinentry-mode=loopback --edit-card <<EOF
+  admin
+  login
+  $IDENTITY
+  $GPG_PIN
+  quit
+  EOF
+
+  just status
+
+pgppin:
+  export ADMIN_PIN=$RANDOM_PIN : $GPG_PIN
+
+  export USER_PIN=$RANDOM_USER_PIN : $GPG_USER_PIN
+
+  printf "\nAdmin PIN: %12s\nUser PIN: %13s\n\n" "$ADMIN_PIN" "$USER_PIN" | tee -a $LOGFILE
 
 certkey:
-  gpg --batch --passphrase "$CERTIFY_PASS" \
-    --quick-generate-key "$IDENTITY" "$KEY_TYPE" cert never
-  
-  KEYID := $(gpg -k --with-colons "$IDENTITY" | awk -F: '/^pub:/ { print $5; exit }')
 
-  KEYFP := $(gpg -k --with-colons "$IDENTITY" | awk -F: '/^fpr:/ { print $10; exit }')
+subkeys:
+# repeat for each linked key
+transferkeys:
+# copy 3 subkeys
+cp 
+gpg --command-fd=0 --pinentry-mode=loopback --edit-key $KEYID <<EOF
+key 1
+keytocard
+1
+$CERTIFY_PASS
+$ADMIN_PIN
+save
+EOF
 
-  printf "\nKey ID: %40s\nKey FP: %40s\n\n" "$KEYID" "$KEYFP"
+echo "Copied key 1 to yubikey "| tee -a $LOGFILE
 
-piv:
+gpg --command-fd=0 --pinentry-mode=loopback --edit-key $KEYID <<EOF
+key 2
+keytocard
+2
+$CERTIFY_PASS
+$ADMIN_PIN
+save
+EOF
 
-fido:
+gpg --command-fd=0 --pinentry-mode=loopback --edit-key $KEYID <<EOF
+key 3
+keytocard
+3
+$CERTIFY_PASS
+$ADMIN_PIN
+save
+EOF
 
-ssh:
+# Copy 2 Certificates
 
-pgp:
+
+gpg -K
+
+# reset the key to import again
+# gpg-connect-agent "scd serialno" "learn --force" /bye
+
+enabletouch:
+
+status:
+ gpg --card-status
 
 reset:
 
-load:
-
 export:
+  gpg --armor --export $KEYID | sudo tee ./$KEYID-$(date +%F).asc
+
