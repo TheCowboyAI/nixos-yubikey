@@ -2,7 +2,7 @@
 # make a key from env vars
 pkgs.writeShellScriptBin "make-certkey" ''
   gpg --batch --passphrase "$CERTIFY_PASS" \
-    --quick-generate-key "$IDENTITY" "$KEY_TYPE" cert never
+    --quick-generate-key "$IDENTITY" "$KEY_TYPE_AUT" cert never
   
   KEYID := $(gpg -k --with-colons "$IDENTITY" | awk -F: '/^pub:/ { print $5; exit }')
 

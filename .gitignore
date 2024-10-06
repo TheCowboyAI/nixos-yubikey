@@ -7,3 +7,4 @@ nixos-yubikey-sd-card.img
 .secrets
 .secrets-*
 .secrets.yaml
+.direnv/

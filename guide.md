@@ -27,6 +27,8 @@ Personal Email
 To support SSL we need some more Identifying Information, like a company, location and domain to apply.
 
 ## Keys
+**NOTE**: We are using ED25519, this is slightly different than rsa techniques.
+
 We will first create the Certify Key which is never given out.
 The Certify Key is NON-REVOCABLE and NON_EXPIRING.
 
