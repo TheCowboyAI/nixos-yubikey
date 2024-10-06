@@ -1,8 +1,10 @@
+# General Yubikey, GPG, PGP, SSL and Smartcard information
    - [[https://github.com/drduh/YubiKey-Guide][DrDuh's YubiKey guide]]
 
-     This one is my personal favorite. Note that the ~gpg.conf~
-     referred to in this guide is already set up for you when you open
-     a shell in the NixOS YubiKey image.
+     This is a very extensive library of information.
+     It has an alternate way to build a NixOS YubiKey image as well as other information on how to work with Yubikeys.
+
+     The main difference is it is a manual process, where we strive to automate it.
 
    - [[https://rzetterberg.github.io/yubikey-gpg-nixos.html][Setting up GnuPG + YubiKey on NixoS for SSH authentication]]
 
@@ -11,24 +13,16 @@
 
    - [[https://www.forgesi.net/gpg-ssh-with-the-yubikey-5/][GPG/SSH with the YubiKey 5]]
 
-     Probably the next best guide I found after DrDuh's guide.
+     Another extensive guide.
 
    - [[https://www.andreagrandi.it/2017/09/30/configuring-offline-gnupg-masterkey-subkeys-on-yubikey/][Configuring an offline GnuPG master key and subkeys on YubiKey]]
 
    - [[https://shankarkulumani.com/2019/03/gpg.html][Starting with GPG and YubiKey]]
 
-     Probably the most "gentle" of the guides.
-
-*** Renewing subkeys
-
-    DrDuh's guide [[https://github.com/drduh/YubiKey-Guide#renewing-sub-keys][now covers subkey renewal]], which is much simpler
-    than rotating keys. Note that once you've renewed your subkeys,
-    you'll need to re-export your keys (including the public key,
-    which will need to be updated in all the usual places), but you do
-    *not* need to update the subkeys on the YubiKey.
+## Renewing subkeys
+DrDuh's guide [[https://github.com/drduh/YubiKey-Guide#renewing-sub-keys][now covers subkey renewal]], which is much simpler than rotating keys. Note that once you've renewed your subkeys, you'll need to re-export your keys (including the public key, which will need to be updated in all the usual places), but you do *not* need to update the subkeys on the YubiKey.
     
-** Other useful information
-
+## Other useful information
    Debian's (and Debian developers') guides to using subkeys and why
    they're useful are probably the best resources on these topics,
    though they're not specific to YubiKeys (or even hardware keys at

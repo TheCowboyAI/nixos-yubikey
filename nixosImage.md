@@ -1,49 +1,48 @@
-  Create NixOS images suitable for initializing YubiKeys.
+# Create NixOS images suitable for securely initializing YubiKeys.
 
-  This repository builds a bootable NixOS image that includes all of the software you need to initialize a YubiKey, and to configure it for use with GnuPG, SSH, PIV Smartcard, TOTP, TLS, Root CA, x.509 for use with Authentication, Signing and Encryption.
+This repository builds a bootable NixOS image that includes all of the software you need to initialize a YubiKey, and to configure it for use with GnuPG, SSH, PIV Smartcard, TOTP, TLS, Root CA, x.509 to Authenticate, Sign and Encrypt.
 
-  It is important to note: 
-  - This is not ready for an initial release, we are still fixing some things in the scripts.
-  - This is not installing anything.
-  - It runs from the sd.
-  - It leaves nothing behind on the machine used.
-  
-  We follow recommended security practices by disabling network interfaces and running the configuration environment from an immutable ISO (nix/store is read-only). The only way to write state to persistent storage is by explicit user action.
+**It is important to note**: 
+- ***This is not ready for an initial release, we are still fixing some things in the scripts. This message will disappear when it's ready.***
+- This is not installing anything.
+- It runs from the sd.
+- All Commands live in the Nix Store (and are immutable)
+- It leaves nothing behind on the machine used.
 
-  This really all depends on how paranoid you want to be.
+We follow recommended security practices by disabling network interfaces and running the configuration environment from an immutable ISO (nix/store is read-only). The only way to write state to persistent storage is by explicit user action.
 
-  Here is the workflow:
+Extending the hardening really depends on how paranoid you want to be.
 
-  Create an ISO image for Initializing a Yubikey.
-  You can get very creative here, but just know this runs on an air-gapped machine the whole time you are configuring the Yubikeys, so intrusion is very unlikely.
+Here is the workflow:
 
-  This ISO image is minimal and pulled ONLY from trusted repositories.
+Create an ISO image for Initializing a Yubikey.
+You can get very creative here, but just know this runs on an air-gapped machine the whole time you are configuring the Yubikeys, so intrusion is very unlikely.
 
-  The image has zero ability to either write to the disk (it's mounted read-only except the home folder), nor connect to anything, i.e. ssh, dns, etc. they are all disabled or removed.
-  
-  Once you disconnect the Yubikeys, They are immutable and have a set of Private Keys that CANNOT be exported.
+This ISO image is minimal and pulled ONLY from trusted repositories.
 
-  This also means that if you lose these keys, you are losing everything these keys produce or unlock.
+The image has zero ability to either write to the boot/system disk (it's mounted read-only except the home folder), nor connect to anything, i.e. ssh, dns, etc. they are all disabled or removed.
 
-  We ALWAYS make a pair (or more) of keys.
+Once you disconnect the Yubikeys, They are immutable and have a set of Private Keys that CANNOT be exported.
 
-  One for usage, one for a backup.
+This also means that if you lose these keys, you are losing everything these keys produce or unlock. We suggest logging the session and use it as a securely encrypted backup.
 
-  Make more backups if you choose, they all have to be made at the same time. This can get tedious when you have several keys to configure.
+We ALWAYS make a pair (or more) of keys.
 
-  There is NO OPTION to "clone" a Yubikey, it would be pretty useless if you could.
+One for usage, one for a backup.
 
-  So in essence, this becomes a physical access device that should be treated like the unique thing it is.
+Make more backups if you choose, they all have to be made at the same time. This can get tedious when you have several keys to configure.
 
-  Put one in a safe location that is fireproof, use the other daily.
+There is NO OPTION to "clone" a Yubikey, it would be pretty useless if you could.
 
-  We actually recommend 3 at a minimum, plus using the sd as a backup for all the pins and keys.
+So in essence, this becomes a physical access device that should be treated like the unique thing it is.
 
-  There are all kinds of gymnastics we can do here...
+Put one in a safe location that is fireproof, use the other daily.
 
-  Just remember, that if you lose them all, you lose everything they unlock.
+We actually recommend 3 at a minimum, plus using the sd as a backup for all the pins and keys.
 
-  Our minimal recommendations, which are actually quite high:
+There are all kinds of gymnastics we can do here...  Just remember, that if you lose them all, you lose everything they unlock.
+
+Our minimal recommendations, which are actually quite high:
 
 - build the ISO from a trusted machine
 - use a NEW usb device and copy the ISO to it.

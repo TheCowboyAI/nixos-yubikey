@@ -1,17 +1,34 @@
 # Initialize Yubikey Set
 This is our process for creating Yubikeys in a safe manner.
-Use the nix Flake that will create a bootable usb or sd card to place a machine into a safe, AIR-GAPPED Environment.
-The sd card will serve as your backup for this process and to store your private keys in a more useful manner than paper.
+
+These instructions are opinionated. For more in-depth understanding of Yubikeys in general, see [Help](./help.md).
+
+Use this nix Flake that will create a bootable usb or sd card to place a machine into a safe, AIR-GAPPED Environment.
+
+The sd card will serve as your backup for this process and to store your private keys in a more useful manner than paper. Logging can be disabled if preferred.
 
 The Environment is very minimal on purpose.
-The ONLY purpose to run is to initialize a set of Yubikeys and therefore, it is hardened and anything not required is removed or blocked.
-This is not a general recovery usb image.
+
+The ONLY purpose to run is to initialize a set of Yubikeys and therefore, it is hardened and anything not required is removed or blocked. This is not a general recovery usb image.
 
 **THESE SHOULD BE NEW, UNUSED YUBIKEYS**
 If you reset them, know they could have history you don't want.
 
+## Identity
+Identity is the name and email address you will be associating with this key.
+There is a primary Identity and for the most part of this guide, we assume you have one email address, or 2 when creating SSL Chain of Authorities. 
+
+Yubikeys are generally considered "personal" devices, but we often use these in an organizational environment. In this case, we use two addresses, if you are just you and not assiciated, just set them to the same email.
+
+Organization Email
+Personal Email
+
+### SSL, TLS and CSRs
+To support SSL we need some more Identifying Information, like a company, location and domain to apply.
+
+## Keys
 We will first create the Certify Key which is never given out.
-The Certify Key is NON-REVOCABLE.
+The Certify Key is NON-REVOCABLE and NON_EXPIRING.
 
 If you destroy this key, you essentially destroy anything the Yubikey is associated with and render it gone forever.
 
@@ -24,7 +41,6 @@ The Certify Key is going to reside solely on the Yubikeys and the Private Key is
 Our strategy is to use the Certify Key to generate the proper keys we 
 need, these are:
 
-- Identity
 - GPG Certify, Encrypt, Authorize and Sign Keypairs
 - SSH Keypair
 - SSL/TLS
@@ -94,8 +110,12 @@ We can log everything we do so it is saved for a backup and audit trail.
 If you don't want logging,
 ```bash
 export LOGFILE=/dev/null
+
+--OR--
+
+disable-logging
 ```
-this will turn the logging feature off and none of the PINS or Keys will be persisted outside of the Yubikeys.
+Either of these this will turn the logging feature off and none of the PINS or Keys will be persisted outside of the Yubikeys.
 
 This makes you responsible for memorizing or backing them up in some way.
 
@@ -111,23 +131,56 @@ These are risks you need to determine. Where will you store the disk encryption 
 **Our sample scenario is**:
 - use new devices
 - air-gap
-- create sd card
-- boot to sd card
+- create an encrypted sd card, write down key
+- boot to the sd card
 - set yubikeys
 - verify yubikeys
 - remove sd card
 - reboot
 - create linked accounts with all yubikeys present
 - verify all keys
-- put one key and sd card in safe place
+- test all keys
+- put one yubikey and the sd card in safe place
 - put encryption key in a different safe place
-- use remaining keys
+- use remaining yubikeys
 
 ### Identity
 This is the Name and Email you are using for this Identity.
+
 This should be a valid email because any certificates your generate will send notices to this address.
+
 Most programs expecting this ID are expecting an email address and that convention is what we recommend.
+
 An email address also must be globally unique, therefore it serves as a unique identifier.
+
+For SSL, we nee some extra information that gets embedded in the certificate.
+
+#### COUNTRY
+  2 character code for a Country
+
+#### REGION
+  State, Province or similar region
+
+#### LOCALITY
+  City, Township, Village, Island, or other locality
+
+#### ORG_NAME
+  A Name for the Organization
+
+#### SUB_ORG
+  A sub category within the organization, such as a department
+
+#### COMMON_NAME
+  What the Certificate will apply to, such as a domain name: www.example.org
+
+#### EMAIL
+  Email address associated with this certificate
+
+#### CERT_PASSWORD (optional)
+  A password for this certificate, note: while more secure, this may cause unwanted interaction requirements if set.
+
+#### COMPANY (optional)
+  A Company Name to associate with this Certificate
 
 ### GPG
 GnuGPG and PGP are used to create 4 shared secrets for use on multiple Yubikey devices. Once imported, the Private Keys are either locked up or destroyed.
@@ -214,6 +267,14 @@ This is all the same information used in the above certificate, but the Identity
 in this case, acme@example.org is used, where acme is the automated certificate user and is combined with the root certificate to form a chain.
 If you're an individual, this is usually your individual email.
 
+This is NOT a certificate to use, but rather one to generate Certificates you can trust. No one else is necessarily going to trust this, but you can. You certainly could use it, it's perfectly valid, but if it gets burned, you need to replace it on the Yubikey.  Instead, generate new certificates for specific purposes that extend the chain of trust.
+
+If you prefer, you can certainly import an existing Root CA and x.509 you may have purchased. We need something we can ultimately trust ourselves, and also something we fully control.  This Chain of Trust begins at these Yubikeys.  We know anything we generate from them is inside our own chain of trust.
+
+Typically, we use these for development certificates so we have end-to-end encryption without the hassle of going and getting a certificate somewhere.
+
+Organizations will typically put the same Root CA on all Yubikeys and change the x.509 to each person.
+
 ## The Yubikeys
 
 **PGP_ADMIN_PIN**
@@ -269,4 +330,4 @@ Sometimes they have the same Credentials applied to them, but they remain distin
 
 By generating Sub Keys, we should be able to use these Yubikeys interchangably. We at least can decrypt anything encrypted by these keys and subsequently generated keys.
 
-
+[Usage on NixOS](./usage.md)

@@ -1,6 +1,6 @@
 { pkgs }:
 # make a key from env vars
-pkgs.writeShellScriptBin "get-env" ''
+pkgs.writeShellScriptBin "make-certkey" ''
   gpg --batch --passphrase "$CERTIFY_PASS" \
     --quick-generate-key "$IDENTITY" "$KEY_TYPE" cert never
   
