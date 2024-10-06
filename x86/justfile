@@ -1,18 +1,3 @@
-# we are in a safe environment, export all these to env vars
-# edit this file after booting and it serves as a backup for pins
-# the randoms are printed, but not saved
-set export
-
-default:
-  echo "info   : Info on a YubiKey \
-gpgpin : Set GPG Pins (separate from PIV)
-certkey: Set Primary Key for issuing Subkeys \
-subkeys: Make and import Subkeys \
-test   : Test a YubiKey \
-reset  : Reset everything to YubiKey defaults \
-export : Export Public Keys
-" 
-
 info:
   gpg --card-status
 
@@ -20,13 +5,7 @@ pin_retries:
   ykman openpgp access set-retries $RETRIES $RETRIES $RETRIES -f -a $GPG_PIN
   printf "Pin Retries set to $RETRIES" | tee -a $LOGFILE
 setattrs:
-  gpg --command-fd=0 --pinentry-mode=loopback --edit-card <<EOF
-  admin
-  login
-  $IDENTITY
-  $GPG_PIN
-  quit
-  EOF
+
 
   just status
 
