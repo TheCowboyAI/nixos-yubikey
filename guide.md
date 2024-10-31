@@ -18,13 +18,13 @@ If you reset them, know they could have history you don't want.
 Identity is the name and email address you will be associating with this key.
 There is a primary Identity and for the most part of this guide, we assume you have one email address, or 2 when creating SSL Chain of Authorities. 
 
-Yubikeys are generally considered "personal" devices, but we often use these in an organizational environment. In this case, we use two addresses, if you are just you and not assiciated, just set them to the same email.
+Yubikeys are generally considered "personal" devices, but we often use these in an organizational environment. In this case, we use two addresses, if you are just you and not associated, just set them to the same email.
 
 Organization Email
 Personal Email
 
 ### SSL, TLS and CSRs
-To support SSL we need some more Identifying Information, like a company, location and domain to apply.
+To support SSL and its use in PIV, we need some more Identifying Information, like a company, location and domain to apply.
 
 ## Keys
 **NOTE**: We are using ED25519, this is slightly different than rsa techniques.
@@ -66,7 +66,7 @@ We can destroy the Private Keys after copying to all devices. This is up to you.
 
 By linking 3 devices, we should have 3 potentially identical devices to the outside world, but can be identified uniquely as well by serial number.
 
-We only use the Certify Key to further identify the Yubikey, and enable us to use any of these three keys as if they were the same. Yubikey has an open serial number which is unique, but not private. We also want to be able to backup our keys in case of disasters.
+We only use the Certify Key to further identify the Yubikey, and enable us to use any of these three keys as if they were the same. Yubikey has an open serial number which is unique, but not private. We also want to be able to backup our keys in case of disasters. Billions of dollars have been lost because of lost keys... back them up, if you need them in a safe, put them in a safe.
 
 The Certify Key has a Public Key as well as an embedded Private Key, which you may back up.
 
@@ -76,14 +76,23 @@ We will need several pieces of information as a set of environment variables to 
 
 .env is already in .gitignore, but we don't want to store any secrets in git by mistake. So we only edit a copy in the air-gapped environment.  You could also type all this in, but this workflow is about automation.
 
-This is a sufficiently secure process for most cases, it will save you a lot of typing.  If you air-gap, encrypt and put the sd in a safe place, this is good base for you to decide what more or less you may need. If you require a higher level of security, you already know the available options.
+This is a sufficiently secure process for most cases, it will save you a lot of hot typing.  If you air-gap, encrypt and put the sd in a safe place, this is a good base for you to decide what more or less you may need. If you require a higher level of security, you already know the available options.
 
 ### Let's recap what we are doing:
 
 #### Secure environment
+We should mount the drive and copy .env into /home/yubikey.
+If we automate this, then the keys end up in the nix store.
+There is a just script to to it though...
+```bash
+just copyenv
+```
+This will mount your drive and copy /secrets.env into the home directory.
+booting will try to load this environment
 
 Boot into a secure, air-gapped environment.
-We are using an off the shelf Dell laptop booting from an sd card in this hardware-configuration.nix. You may need to adjust this before deploying. 
+
+In our tested environment, we are using an off the shelf Dell laptop booting from an sd card in this hardware-configuration.nix. You may need to adjust this before deploying, it's not really Dell specific, but it is x86_64. 
 
 It should have any network wires disconnected, but we turn all networking off anyway.
 
@@ -91,18 +100,22 @@ It should boot and Auto-login as the Yubikey user to:
 ```bash
 /home/yubikey
 ```
-Copy the .env file into the home folder by typing:
+If you copied the .env file with copyenv, it should autoload.
+otherwise, to get a copy of the .env file if you didn't copy it in the home folder by typing:
 ```bash
 get-env
 ```
 edit the .env file, add your favorite editor to change this
 ```bash
-nano ./.env
+micro ./.env
 ```
 load the environment
 ```bash
 source ./.env
 ```
+
+Now you can start the [install scripts](./scripts/readme.md).
+
 ## Environment
 To properly set the environment variables, use this guide.
 
@@ -146,16 +159,18 @@ These are risks you need to determine. Where will you store the disk encryption 
 - put encryption key in a different safe place
 - use remaining yubikeys
 
+## What we set
+
 ### Identity
 This is the Name and Email you are using for this Identity.
 
-This should be a valid email because any certificates your generate will send notices to this address.
+This should be a valid email because any certificates you generate will send notices to this address.
 
 Most programs expecting this ID are expecting an email address and that convention is what we recommend.
 
 An email address also must be globally unique, therefore it serves as a unique identifier.
 
-For SSL, we nee some extra information that gets embedded in the certificate.
+For SSL, we need some extra information that gets embedded in the certificate.
 
 #### COUNTRY
   2 character code for a Country
@@ -190,27 +205,59 @@ GnuGPG and PGP are used to create 4 shared secrets for use on multiple Yubikey d
 ##### The 4 Keys are:
 - Certify Key
   - this is your master key and goes nowhere but these yubikeys
-- Authentication Key
-  - a revocable key for authenticating as a user with your identity
-- Signing Key
-  - a revocable key for signing with your identity
-- Encryption Key
-  - a revocable key for encryption.
-    - **CAUTION** When this Key is rotated or revoked, anything encrypted with it, will also need to be updated before destroying the old key.
-    - For this reason, we recommend freely using this to encrypt live communications, but encrypting files and disks should use a generated key.
+  - this key has no expiration
+
+- Rotatable Keys
+  - Authentication Key
+    - a revocable key for authenticating as a user with your identity
+  - Signing Key
+    - a revocable key for signing with your identity
+  - Encryption Key
+    - a revocable key for encryption.
+      - **CAUTION** When this Key is rotated or revoked, if `symmetric keys` are not used, anything encrypted with it, will also need to be updated before destroying the old key.
+
+#### Key Rotation
+If you need regulatory compliance such as:
+- [General Data Protection Regulation (GDPR)](https://gdpr-info.eu/art-32-gdpr/)
+- [Health Insurance Portability and Accountability Act (HIPAA)](https://www.hhs.gov/hipaa/index.html)
+- [Payment Card Industry Data Security Standards (PCI-DSS)](https://www.pcisecuritystandards.org/about_us/)
+
+It is highly recommended that you rotate keys at least every two (2) years.
+[Updating Keys](https://github.com/drduh/YubiKey-Guide?tab=readme-ov-file#updating-keys)
 
 ### SSH
-SSH Keypair is created for Authentication via SSH
+SSH Key pair is created for Authentication via SSH
 Other programs may allow the use of an ssh key for authentication as well, such as git repositories.
 
 ### SSL
-A Root CA Certificate is created
-An X.509 Certificate based on this Root CA is also created for this Identity
-This can also be used to create self-signed certificates that are trusted, revokeable and renewable by the Yubikey owner.
+These certificates are used in the PIV settings 
+
+You may want a Trusted Certificate from a well-known Root CA.
+If you have such a Certificate, include it, we only need the certificate itself.
+[SSL.com guide](https://www.ssl.com/how-to/key-generation-and-attestation-with-yubikey/)
+With the certificate, we will copy it on to the Yubikey.
+
+A Self-Signed Root CA Certificate is created for the Domain.
+An X.509 Certificate based on this Root CA is also created for this Identity.
+You won't need a provider for this. 
+It should be able to have an extended lifetime, such as 2-5 years.
+To renew the certificate you may need to write it to the Yubikey depending on your lifecycle policy.
+This self-signed certificate is trusted, revokable and renewable by the Yubikey owner.
+
+### Other
+We also set all the pins, enable Fido2 and PIV.
+
+All these are set through environment variables in secrets/.env
+copy /.env into secrets and change all your settings.
+we want to keep this from straying into the nix store, so secrets is not saved
+into the repository, however we can copy it onto the USB device in order to set all this stuff without typing it at the command line.
 
 ## What we need:
 
 Set these environment variables after booting to the secure environment either using the above directions, or manually.
+There is an order of precedent, but all the scripts if run individually, notify you of any predecessors not yet run.
+They are all intended to be idempotent, but if you don't have fresh yubikeys, that may not be the case...
+make sure to set <x_OLD> variables to the previous setting if you don't have the defaults.
 
 # Additional Information
 
@@ -221,7 +268,7 @@ The Name and Email Pair used for this Identity
 Format: "Name <email>"
 This is the Identity used for GnuPG and is a Name, Email address, Comment triple. The Comments are disabled for compatibility. If you do not use an email address, there may be problems that arise, so just use one.
 
-### Generate GPG Keys
+### Generating GPG Keys
 **CERTIFY_PASS**
 This is a passphrase used to generate the Certify Key.
 It is recommended to be only Uppercase Letters and Numbers.
@@ -233,49 +280,52 @@ There is also a passphrase generator that can be invoked using RANDOM_PASS,
 export CERTIFY_PASS=$RANDOM_PASS
 ```
 If you don't want the random ones, comment them out or don't include them because they do get saved in the log.
-This is for backup purposes.
+This is for backup purposes, this whole drive will be used once and stored in most cases only to be used if the keys all get revoked.
 
 ### Subkeys
-If rotated, re-encryption may be necessary.
+If rotated, re-encryption may be necessary. We recommend the symmetric key approach.
 
 In order to let the world know that your new key pair actually belongs to you without having to meet in person again, the standard procedure is to sign the new key with the old one and the other way around, establishing a hard trust link between them (this action can not be done without access to the old secret key, so as far as anyone can tell, this two-way signature could only have been done by you).
 
-This is the primary reason we backup the Private Keys, existing on the Yubikey is usually sufficient for this, but care must be used during rotation not to lose the old key before the two way link is made.
+This is the primary reason we backup the Private Keys, existing on the Yubikey is usually sufficient for this, but care must be used during rotation not to lose the old key before the two way link is made. This is a whole [procedure](./keyrotaation.md) in itself.
 
 - Signature Key
   - Key used for PGP Signing
-- Encryption Key
-  - Key used to encrypt communications, files, and drives.
 - Authentication Key
   - Key used for PGP Authentication 
+- Encryption Key
+  - Key used to encrypt communications, files, and drives.
 
 ### SSL
 - SSL Root CA
-  - The Root CA is a certificate used for making self-signed SSL/TLS Certificates that you can trust
+  - The Root CA is a certificate used for making self-signed SSL/TLS Certificates that you can trust, and no one else needs to trust.
 - X.509 Certificate
+  - A trusted certificate in the CA chain to use SSL Traffic
+  - This is the certificate you put on a server
+- X.509 Client Certificate
   - A trusted client CA certificate chain to use with client authentication
 
-Both certificates need a block of Identifying information.
+All certificates need a block of Identifying information.
 Root is usually an Organization
-x.509 is an Individual
+x.509 is usually an Individual
 
-We use these for internal certificates that we don't need 3rd party certification to use, such as internal development sites or access to a common low security database or web page.
+We use these for internal certificates that we don't need 3rd party certification to use, such as internal development sites or access to an internal secured database or web page.
 
-To create a Certificate, we need some additional informationabout the Organization.
-If this is a personal Yubikey, you may use anything appropriate, but they re the same fields.
+To create a Certificate, we need some additional information about the Organization.
+If this is a personal Yubikey, you may use anything appropriate, but they are the same fields.
 
 The x.509 Certificate is definitely attached to an Identity.
 This is all the same information used in the above certificate, but the Identity is different
 in this case, acme@example.org is used, where acme is the automated certificate user and is combined with the root certificate to form a chain.
-If you're an individual, this is usually your individual email.
+For the Client Certificate you're an individual, this is usually your individual email.
 
-This is NOT a certificate to use, but rather one to generate Certificates you can trust. No one else is necessarily going to trust this, but you can. You certainly could use it, it's perfectly valid, but if it gets burned, you need to replace it on the Yubikey.  Instead, generate new certificates for specific purposes that extend the chain of trust.
+This is NOT just a certificate to use, but rather one to generate Certificates you can trust. No one else is necessarily going to trust this, but you can. You certainly could use it, it's perfectly valid, but if it gets burned, you need to replace it on the Yubikey.  Instead, generate new certificates for specific purposes that extend the chain of trust.
 
-If you prefer, you can certainly import an existing Root CA and x.509 you may have purchased. We need something we can ultimately trust ourselves, and also something we fully control.  This Chain of Trust begins at these Yubikeys.  We know anything we generate from them is inside our own chain of trust.
+If you have one, import an existing Root CA and x.509 you may have purchased. We need something we can ultimately trust ourselves, and also something we fully control.  This Chain of Trust begins at these Yubikeys.  We know anything we generate from them is inside our own chain of trust.
 
-Typically, we use these for development certificates so we have end-to-end encryption without the hassle of going and getting a certificate somewhere.
+Typically, we use these for development certificates so we have end-to-end encryption without the hassle of going and getting a certificate somewhere. Free Certificates may also expire too soon (2 weeks) and we want a longer certificate.
 
-Organizations will typically put the same Root CA on all Yubikeys and change the x.509 to each person.
+Organizations will typically put the same Root CA on all Yubikeys and change the Client x.509 to each person.
 
 ## The Yubikeys
 
@@ -294,6 +344,8 @@ default value: not set
 
 ### PIV - Smartcard Operations
 Personal Identity Verification (PIV) is defined in FIPS 201. It is a US government standard defining various authentication and cryptographic operations using a smart card.
+
+We assign the certificates here.
 
 **PIV_PIN**
 Authentication for Signing and Decryption

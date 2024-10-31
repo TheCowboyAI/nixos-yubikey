@@ -1,6 +1,6 @@
 { pkgs }:
 # make a key from env vars
-pkgs.writeShellScriptBin "make-certkey" ''
+pkgs.writeShellScriptBin "make-certkey" /*bash*/''
   gpg --batch --passphrase "$CERTIFY_PASS" \
     --quick-generate-key "$IDENTITY" "$KEY_TYPE_AUT" cert never
   
@@ -8,5 +8,5 @@ pkgs.writeShellScriptBin "make-certkey" ''
 
   KEYFP := $(gpg -k --with-colons "$IDENTITY" | awk -F: '/^fpr:/ { print $10; exit }')
 
-  printf "\nKey ID: %40s\nKey FP: %40s\n\n" "$KEYID" "$KEYFP" | tee -a $LOGFILE
+  printf "certifykey-created:{\"keyid\": \"%s\", \"keyfp\": \"%s\"}\n" "$KEYID" "$KEYFP" | tee -a $LOGFILE
 ''

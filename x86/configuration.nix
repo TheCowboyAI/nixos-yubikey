@@ -1,4 +1,4 @@
-{ lib, config, pkgs, modulesPath, agenix, ... }:
+{ lib, pkgs, modulesPath, ... }:
 {
   system.stateVersion = "24.05";
   system.copySystemConfiguration = false;
@@ -39,6 +39,7 @@
     cryptsetup
     git
     just
+    micro
     gitAndTools.git-extras
     gnupg
     pcsclite
@@ -102,7 +103,7 @@
     };
 
     histSize = 10000;
-    #loginShellInit = " ";
+    loginShellInit = "source ~/.env";
   };
 
   system.activationScripts.script.text = "touch /home/yubikey/.zshrc";

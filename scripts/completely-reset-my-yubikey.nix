@@ -1,31 +1,33 @@
 { pkgs }:
-pkgs.writeShellScriptBin "completely-reset-my-yubikey" ''
-# are you sure? :-)
-# as this implies, it will kill your yubikey.
-    # Reset various YubiKey applets
-    echo "Resetting PIV applet..." | tee -a $LOGFILE
-    ykman piv reset -f
-    echo "PIV applet reset completed." | tee -a $LOGFILE
+pkgs.writeShellScriptBin "completely-reset-my-yubikey" /*bash*/''
+  # are you sure? :-)
+  # as this implies, it will kill your yubikey.
 
-    echo "Resetting FIDO2 applet..."
-    ykman fido reset -f
-    echo "FIDO2 applet reset completed." | tee -a $LOGFILE
+    function log(msg) {echo msg | tee -a $LOGFILE} 
 
-    echo "Resetting OATH applet..." | tee -a $LOGFILE
-    ykman oath reset -f
-    echo "OATH applet reset completed." | tee -a $LOGFILE
+      # Reset various YubiKey applets
+      echo "Resetting PIV applet..."
+      ykman piv reset -f
+      log "PIV-applet-reset-completed"
 
-    echo "Resetting OpenPGP applet..." | tee -a $LOGFILE
-    ykman openpgp reset -f
-    echo "OpenPGP applet reset completed." | tee -a $LOGFILE
+      echo "Resetting FIDO2 applet..."
+      ykman fido reset -f
+      log "FIDO2-applet-reset-completed"
 
-    echo "Resetting OTP slots..." | tee -a $LOGFILE
-    ykman otp delete 1 -f
-    ykman otp delete 2 -f
-    echo "OTP slots reset completed." | tee -a $LOGFILE
+      echo "Resetting OATH applet..."
+      ykman oath reset -f
+      log "OATH-applet-reset-completed"
 
-    echo "Resetting configuration..." | tee -a $LOGFILE
-    ykman config reset -f
-    echo "Configuration reset completed." | tee -a $LOGFILE
+      echo "Resetting OpenPGP applet..."
+      ykman openpgp reset -f
+      log "Reset-OpenPGP-applet-completed"
+      
+      echo "Resetting OTP slots..."
+      ykman otp delete 1 -f
+      ykman otp delete 2 -f
+      log "OTP-slots-reset-completed"
 
+      echo "Resetting configuration..."
+      ykman config reset -f
+      log "config-reset-completed"
 ''

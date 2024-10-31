@@ -9,6 +9,7 @@
     nixosConfigurations = {
       nixos-yubikey = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
+        specialArgs = inputs;
         modules = [
           disko.nixosModules.disko
           ./configuration.nix

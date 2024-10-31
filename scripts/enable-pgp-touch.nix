@@ -1,9 +1,13 @@
 { pkgs }:
-pkgs.writeShellScriptBin "enable-pgp-touch" ''
+pkgs.writeShellScriptBin "enable-pgp-touch" /*bash*/''
+  function log(msg) {echo msg | tee -a $LOGFILE} 
+
   ykman openpgp keys set-touch dec on
-  echo "Enabled Encryption Touch" | tee -a $LOGFILE
+  log "encryption-touch-enabled"
+
   ykman openpgp keys set-touch sig on
-  echo "Enabled Signature Touch" | tee -a $LOGFILE
+  log "signature-touch-enabled"
+  
   ykman openpgp keys set-touch aut on
-  echo "Enabled Authetication Touch" | tee -a $LOGFILE  
+  log "authetication-touch-enabled"  
 ''

@@ -1,7 +1,7 @@
 { pkgs }:
 let
-  env = pkgs.copyPathToStore ../x86/.env;
+  env = pkgs.copyPathToStore ../.env;
 in
-pkgs.writeShellScriptBin "get-env" ''
-    cp ${env} /home/yubikey
+pkgs.writeShellScriptBin "get-env" /*bash*/''
+  cp ${env} /home/yubikey/
 ''
