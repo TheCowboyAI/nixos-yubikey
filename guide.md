@@ -107,11 +107,11 @@ get-env
 ```
 edit the .env file, add your favorite editor to change this
 ```bash
-micro ./.env
+edit-env
 ```
 load the environment
 ```bash
-source ./.env
+set-env
 ```
 
 Now you can start the [install scripts](./scripts/readme.md).

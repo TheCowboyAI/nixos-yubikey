@@ -1,36 +1,29 @@
 { pkgs }:
 pkgs.writeShellScriptBin "make-rootca" /*bash*/''
-  csr.conf<<EOF
-  [req]
-  distinguished_name = req_distinguished_name
-  req_extensions = v3_req
-  prompt = no
-  
-  [req_distinguished_name]
-  C = $COUNTRY
-  ST = $REGION
-  L = $LOCALITY
-  O = $ORG_NAME
-  emailAddress = $EMAIL
-  CN = $COMMON_NAME
+  function eventlog(event){
+    echo event>>$LOGFILE
+  }
 
-  [v3_req]
-  keyUsage = keyEncipherment, dataEncipherment
-  extendedKeyUsage = serverAuth
-  subjectAltName = @alt_names
-  
-  [alt_names]
-  DNS.1 = *.$COMMON_NAME
-  DNS.1 = *.dev.$COMMON_NAME
-  EOF
+  # sanity check //todo
+  # if !$COMMON_NAME||!$COMMON_NAME||$COUNTRY then
+  #   //exit asking to set env
+  # end if
 
-  openssl genpkey -algorithm $KEY_TYPE_AUTH -out $COMMON_NAME.pem
-  openssl req -new -key $COMMON_NAME.pem -out $COMMON_NAME.csr -config csr.conf
-  openssl x509 -req -days $EXPIRATION_D -in $COMMON_NAME.csr -signkey $COMMON_NAME.pem -out $COMMON_NAME.crt -extensions req_ext -extfile csr.conf
+  # create root ca private key
+  openssl ecparam -name $KEY_TYPE_SSL -genkey -noout -out $COMMON_NAME.pem
+  rootkey-evt = "{"rootca-private-key-created":{"rootca-privatekey":"(cat $COMMON_NAME.pem)"}}"
+  eventlog rootkey-evt
+
+  # create root ca
+  openssl req -x509 -new \
+    -key $COMMON_NAME.pem \
+    -days $EXPIRATION_D \
+    -subj "/C=$COUNTRY/ST=$REGION/L=$LOCALITY/O=$ORG_NAME/CN=$COMMON_NAME/emailAddress=$EMAIL" \
+    -out $COMMON_NAME.crt
+  rootca-evt = "{"rootca-certificate-created":{"rootca-cert":"$COMMON_NAME.crt"}}"
+  eventlog rootca-evt
 
   # export its pubkey
   openssl pkey -in $COMMON_NAME.pem -pubout -out $COMMON_NAME.pub
-
-  printf "\n$COMMON_NAME: %40s\nPublic Key: %40s\nPrivate Key: %40s\n\n" "$COMMON_NAME" "(cat $COMMON_NAME.pub)" "(cat $COMMON_NAME.pem)" | tee -a $LOGFILE
 ''
-
+  

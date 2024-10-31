@@ -2,11 +2,16 @@
 # make a key from env vars
 pkgs.writeShellScriptBin "make-certkey" /*bash*/''
   gpg --batch --passphrase "$CERTIFY_PASS" \
-    --quick-generate-key "$IDENTITY" "$KEY_TYPE_AUT" cert never
-  
-  KEYID := $(gpg -k --with-colons "$IDENTITY" | awk -F: '/^pub:/ { print $5; exit }')
+    --quick-generate-key "$O_IDENTITY" "$KEY_TYPE_AUT" cert never
 
-  KEYFP := $(gpg -k --with-colons "$IDENTITY" | awk -F: '/^fpr:/ { print $10; exit }')
+  # get the revoke cert
+    
+  KEYID := $(gpg -k --with-colons "$O_IDENTITY" | awk -F: '/^pub:/ { print $5; exit }')
 
-  printf "certifykey-created:{\"keyid\": \"%s\", \"keyfp\": \"%s\"}\n" "$KEYID" "$KEYFP" | tee -a $LOGFILE
+  KEYFP := $(gpg -k --with-colons "$O_IDENTITY" | awk -F: '/^fpr:/ { print $10; exit }')
+
+
+
+  certkeyevt = "{"certkey-created":{"publickey":"$KEYID", "fingerprint":"$KEYFP"}}"
+  eventlog certkeyevt
 ''
