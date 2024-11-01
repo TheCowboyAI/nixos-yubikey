@@ -1,6 +1,9 @@
 { pkgs }:
 pkgs.writeShellScriptBin "set-attributes" /*bash*/''
-    function eventlog(evt) {echo evt >> $EVENTLOG}
+    function eventlog {
+    local evt="$1"
+    echo "$evt" >> "$EVENTLOG"
+}
 
   # TODO
 

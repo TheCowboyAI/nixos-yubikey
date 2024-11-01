@@ -4,7 +4,10 @@ pkgs.writeShellScriptBin "make-subkeys" /*bash*/''
   # Subkeys using the previously configured env vars
   # key type, passphrase and expiration
   
-  function eventlog(evt) {echo evt >> $EVENTLOG}
+  function eventlog {
+    local evt="$1"
+    echo "$evt" >> "$EVENTLOG"
+}
 
   gpg --batch --pinentry-mode=loopback --passphrase "$CERTIFY_PASS" \
     --quick-add-key "$KEYFP" "$KEY_TYPE_AUTH" auth "$EXPIRATION_Y"

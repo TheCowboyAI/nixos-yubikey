@@ -1,7 +1,10 @@
 { pkgs }:
 # make a key from env vars
 pkgs.writeShellScriptBin "make-certkey" /*bash*/''
-  function eventlog(evt) {echo evt >> $EVENTLOG}
+  function eventlog {
+    local evt="$1"
+    echo "$evt" >> "$EVENTLOG"
+}
 
   gpg --batch --passphrase "$CERTIFY_PASS" \
     --quick-generate-key "$O_IDENTITY" "$KEY_TYPE_AUT" cert never

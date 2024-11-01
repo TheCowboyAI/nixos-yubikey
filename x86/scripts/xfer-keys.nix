@@ -1,6 +1,9 @@
 { pkgs }:
 pkgs.writeShellScriptBin "xfer-keys" /*bash*/''
-  function eventlog(evt) {echo evt >> $EVENTLOG}
+  function eventlog {
+    local evt="$1"
+    echo "$evt" >> "$EVENTLOG"
+}
 
   # auth key
   gpg --command-fd=0 --pinentry-mode=loopback --edit-key $KEYID <<EOF

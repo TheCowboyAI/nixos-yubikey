@@ -3,7 +3,10 @@ pkgs.writeShellScriptBin "completely-reset-my-yubikey" /*bash*/''
   # are you sure? :-)
   # as this implies, it will kill your yubikey.
 
-    function log(msg) {echo msg | tee -a $LOGFILE} 
+    function log {
+    local msg="$1"
+    echo "$msg" | tee -a "$LOGFILE"
+}
 
       # Reset various YubiKey applets
       echo "Resetting PIV applet..."

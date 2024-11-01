@@ -1,6 +1,9 @@
 { pkgs }:
 pkgs.writeShellScriptBin "xfer-certs" /*bash*/''
-  function eventlog(evt) {echo evt >> $EVENTLOG}
+  function eventlog {
+    local evt="$1"
+    echo "$evt" >> "$EVENTLOG"
+}
 
   rootcaevt=$( jq -n \
     --arg cn "$COMMON_NAME" \

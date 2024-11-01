@@ -1,6 +1,9 @@
 { pkgs }:
 pkgs.writeShellScriptBin "make-rootca" /*bash*/''
-  function eventlog(evt) {echo evt >> $EVENTLOG}
+  function eventlog {
+    local evt="$1"
+    echo "$evt" >> "$EVENTLOG"
+}
 
   # sanity check //todo
   # if !$COMMON_NAME||!$COMMON_NAME||$COUNTRY then

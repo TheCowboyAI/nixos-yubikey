@@ -1,6 +1,9 @@
 { pkgs }:
 pkgs.writeShellScriptBin "set-piv-pins" /*bash*/''
-  function eventlog(evt) {echo evt >> $EVENTLOG}
+  function eventlog {
+    local evt="$1"
+    echo "$evt" >> "$EVENTLOG"
+}
 
   # Change PIV PIN and PUK
   ykman piv change-pin --pin "$DEFAULT_PIN" --new-pin "$PIV_PIN"

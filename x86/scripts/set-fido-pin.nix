@@ -1,6 +1,9 @@
 { pkgs }:
 pkgs.writeShellScriptBin "set-fido-pin" /*bash*/''
-  function eventlog(evt) {echo evt >> $EVENTLOG}
+  function eventlog {
+    local evt="$1"
+    echo "$evt" >> "$EVENTLOG"
+}
 
   ykman fido access change-pin --new-pin "$FIDO2_PIN"
 

@@ -1,6 +1,9 @@
 { pkgs }:
 pkgs.writeShellScriptBin "make-tls-client" /*bash*/''
-    function eventlog(evt) {echo evt >> $EVENTLOG}
+    function eventlog {
+    local evt="$1"
+    echo "$evt" >> "$EVENTLOG"
+}
 
   # create the private key  
   openssl ecparam -name $KEY_TYPE_SSL -genkey -noout \

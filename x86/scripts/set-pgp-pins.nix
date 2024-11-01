@@ -1,6 +1,9 @@
 { pkgs }:
 pkgs.writeShellScriptBin "set-pgp-pins" /*bash*/''
-  function eventlog(evt) {echo evt >> $EVENTLOG}
+  function eventlog {
+    local evt="$1"
+    echo "$evt" >> "$EVENTLOG"
+}
 
   # Change OpenPGP User PIN and Admin PIN
   ykman openpgp access change-pin --pin $OPENPGP_USER_PIN_OLD --new-pin "$OPENPGP_USER_PIN"
