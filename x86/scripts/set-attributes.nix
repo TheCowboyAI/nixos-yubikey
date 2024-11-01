@@ -5,7 +5,7 @@ pkgs.writeShellScriptBin "set-attributes" /*bash*/''
     echo "$evt" >> "$EVENTLOG"
 }
 
-  # TODO
+    export DEVICE=$(ykman list --serials)
 
     gpg --command-fd=0 --pinentry-mode=loopback --edit-card <<EOF
     admin

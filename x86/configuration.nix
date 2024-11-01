@@ -65,6 +65,7 @@
     (import scripts/enable-pgp-touch.nix {inherit pkgs;})
     (import scripts/enable-piv-touch.nix {inherit pkgs;})
     (import scripts/get-env.nix {inherit pkgs;})
+    (import scripts/get-serials.nix {inherit pkgs;})
     (import scripts/get-status.nix {inherit pkgs;})
     (import scripts/make-certkey.nix {inherit pkgs;})
     (import scripts/make-domain-cert.nix {inherit pkgs;})
