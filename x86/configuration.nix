@@ -49,13 +49,15 @@
     pwgen
     gpg-tui
     openssh
+    jq
+    jc
 
     yubikey-manager
     yubikey-manager-qt
     yubikey-personalization
     age-plugin-yubikey
     piv-agent
-    (import ./test-keys.nix { inherit pkgs; })
+    #(import ../tests/test-keys.nix { inherit pkgs; })
   ];
 
   services.udev.packages = with pkgs; [

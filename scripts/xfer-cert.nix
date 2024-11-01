@@ -2,10 +2,21 @@
 pkgs.writeShellScriptBin "xfer-certs" /*bash*/''
   function eventlog(evt) {echo evt >> $EVENTLOG}
 
-  eventlog "{'openssl-rootca-transferred':{'name':'$COMMON_NAME'}}"
+  rootcaevt=$( jq -n \
+    --arg cn "$COMMON_NAME" \
+    '{openssl-rootca-transferred: {name: $cn}}' 
+  )
+  eventlog rootcaevt
 
-  eventlog "{'openssl-wildcard-transferred':{'name':'*.$COMMON_NAME'}}"
+  wildcardevt=$( jq -n \
+    --arg cn "$COMMON_NAME" \
+    '{openssl-wildcard-transferred: {name: $cn}}' 
+  )
+  eventlog wildcardevt
   
-  eventlog "{'openssl-client-transferred':{'name':'$X_COMMON_NAME'}}"
-
+  clientevt=$( jq -n \
+    --arg cn "$X_COMMON_NAME" \
+    '{openssl-client-transferred: {name: $cn}}' 
+  )
+  eventlog clientevt
 ''

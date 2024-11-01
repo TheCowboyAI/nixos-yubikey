@@ -1,72 +1,11 @@
-info:
-  gpg --card-status
+makesd:
+  ```sudo nix run 'github:nix-community/disko#disko-install' -- --write-efi-boot-entries --flake .#nixos-yubikey --disk main /dev/sda```
 
-pin_retries:
-  ykman openpgp access set-retries $RETRIES $RETRIES $RETRIES -f -a $GPG_PIN
-  printf "Pin Retries set to $RETRIES" | tee -a $LOGFILE
-setattrs:
-
-
-  just status
-
-pgppin:
-  export ADMIN_PIN=$RANDOM_PIN : $GPG_PIN
-
-  export USER_PIN=$RANDOM_USER_PIN : $GPG_USER_PIN
-
-  printf "\nAdmin PIN: %12s\nUser PIN: %13s\n\n" "$ADMIN_PIN" "$USER_PIN" | tee -a $LOGFILE
-
-certkey:
-
-subkeys:
-# repeat for each linked key
-transferkeys:
-# copy 3 subkeys
-cp 
-gpg --command-fd=0 --pinentry-mode=loopback --edit-key $KEYID <<EOF
-key 1
-keytocard
-1
-$CERTIFY_PASS
-$ADMIN_PIN
-save
-EOF
-
-echo "Copied key 1 to yubikey "| tee -a $LOGFILE
-
-gpg --command-fd=0 --pinentry-mode=loopback --edit-key $KEYID <<EOF
-key 2
-keytocard
-2
-$CERTIFY_PASS
-$ADMIN_PIN
-save
-EOF
-
-gpg --command-fd=0 --pinentry-mode=loopback --edit-key $KEYID <<EOF
-key 3
-keytocard
-3
-$CERTIFY_PASS
-$ADMIN_PIN
-save
-EOF
-
-# Copy 2 Certificates
-
-
-gpg -K
-
-# reset the key to import again
-# gpg-connect-agent "scd serialno" "learn --force" /bye
-
-enabletouch:
-
-status:
- gpg --card-status
-
-reset:
-
-export:
-  gpg --armor --export $KEYID | sudo tee ./$KEYID-$(date +%F).asc
-
+copyenv:
+  cd ~
+  sudo mkdir -p /media/yubikey
+  sudo mount /dev/sda2 /media/yubikey
+  sudo cp secrets/.env /media/yubikey/home/yubikey
+  sync
+  sudo umount /media/yubikey
+  sudo rmdir /media/yubikey

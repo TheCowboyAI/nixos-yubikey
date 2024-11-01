@@ -37,6 +37,7 @@
               pkg-config
               bat
               jq
+              jc
               ncdu
               lsd
               btop
