@@ -5,6 +5,6 @@ pkgs.writeShellScriptBin "enable-piv-touch" /*bash*/''
     echo "$evt" >> "$EVENTLOG"
 }
 
-  ykman piv access set-touch-policy always --management-key default 9a
+  ykman piv access set-touch-policy always --management-key $MGMT_KEY 9a
   eventlog "{'piv-touch-policy-set':'enabled'}"
 ''

@@ -77,7 +77,6 @@
     (import scripts/random-mgmt-key.nix {inherit pkgs;})
     (import scripts/random-pass.nix {inherit pkgs;})
     (import scripts/set-attributes.nix {inherit pkgs;})
-    (import scripts/set-backup-key.nix {inherit pkgs;})
     (import scripts/set-env.nix {inherit pkgs;})
     (import scripts/set-fido-pin.nix {inherit pkgs;})
     (import scripts/set-fido-retries.nix {inherit pkgs;})
