@@ -5,11 +5,16 @@ pkgs.writeShellScriptBin "xfer-certs" /*bash*/''
     echo "$evt" >> "$EVENTLOG"
 }
 
+  ykman piv certificates import --subject 82 -m $MGMT_KEY $COMMON_NAME.crt
+
   rootcaevt=$( jq -n \
     --arg cn "$COMMON_NAME" \
     '{openssl-rootca-transferred: {name: $cn}}' 
   )
   eventlog rootcaevt
+
+
+  ykman piv certificates import --subject 83 -m $MGMT wildcard.$COMMON_NAME.crt
 
   wildcardevt=$( jq -n \
     --arg cn "$COMMON_NAME" \
@@ -17,6 +22,9 @@ pkgs.writeShellScriptBin "xfer-certs" /*bash*/''
   )
   eventlog wildcardevt
   
+
+  ykman piv certificates import --subject 84 -m $MGMT sslclient$COMMON_NAME.crt
+
   clientevt=$( jq -n \
     --arg cn "$X_COMMON_NAME" \
     '{openssl-client-transferred: {name: $cn}}' 

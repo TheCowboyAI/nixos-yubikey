@@ -17,12 +17,12 @@ Or, use the following commands:
 - **`set-noevents`**: Disables event logging.
     - Event: `{ "eventlog-set": false }`
 
-### Preparatory Steps
+## Preparatory Steps
 
 - **`get-env`**: Retrieve a sample `.env` file for configuration purposes.
 - **`get-status`**: Check the current status of the YubiKey device.
 
-### YubiKey Configuration
+## YubiKey Configuration
 
 The following scripts enable a comprehensive setup for YubiKey configuration. Ensure that all environment settings are loaded, as incomplete setup will trigger a warning.
 
@@ -35,20 +35,7 @@ The following scripts enable a comprehensive setup for YubiKey configuration. En
 - **`completely-reset-my-yubikey`**: Resets the YubiKey to its default state, removing all keys and PINs. This command should be used only if a full reset is required.
     - Event: `{ "yubikey-full-reset": true }` (returns `false` if reset fails)
 
-### Module Enabling Scripts
-
-These scripts activate additional modules on the YubiKey as required:
-
-- **`enable-fido2`**: Activates the FIDO2 module.
-    - Event: `{ "fido2-enabled": true }`
-  
-- **`enable-pgp-touch`**: Activates the PGP touch feature.
-    - Event: `{ "pgp-touch-enabled": true }`
-  
-- **`enable-piv-touch`**: Activates the PIV touch feature.
-    - Event: `{ "piv-touch-enabled": true }`
-
-### Key and Certificate Creation
+## Key and Certificate Creation
 
 The following scripts generate and configure cryptographic keys and certificates:
 
@@ -99,6 +86,19 @@ The following scripts manage PIN settings for the YubiKey:
   
 - **`set-piv-pin`**: Configures all PIV PINs.
     - Event: `{ "piv-pins-set": { "pivpin": PIV_PIN, "pivpuk": PIV_PUK } }`
+
+## Module Enabling Scripts
+
+These scripts activate additional modules on the YubiKey as required:
+
+- **`enable-fido2`**: Activates the FIDO2 module.
+    - Event: `{ "fido2-enabled": true }`
+  
+- **`enable-pgp-touch`**: Activates the PGP touch feature.
+    - Event: `{ "pgp-touch-enabled": true }`
+  
+- **`enable-piv-touch`**: Activates the PIV touch feature.
+    - Event: `{ "piv-touch-enabled": true }`
 
 ### Verification and Transfer of Keys and Certificates
 
