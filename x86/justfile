@@ -1,6 +1,4 @@
 makesd:
-# this isn't working from just...
-# I get bizarre errors not mounting a partition
   ```sudo nix run 'github:nix-community/disko#disko-install' -- --write-efi-boot-entries --flake .#nixos-yubikey --disk main /dev/sda```
 
 copyenv:

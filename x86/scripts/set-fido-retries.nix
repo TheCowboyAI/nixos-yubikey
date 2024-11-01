@@ -1,5 +1,5 @@
 { pkgs }:
-pkgs.writeShellScriptBin "set-fido2-retries" /*bash*/''
+pkgs.writeShellScriptBin "set-fido-retries" /*bash*/''
   function eventlog {
     local evt="$1"
     echo "$evt" >> "$EVENTLOG"

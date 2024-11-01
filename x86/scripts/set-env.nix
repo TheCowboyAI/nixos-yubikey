@@ -1,4 +1,4 @@
 { pkgs }:
-pkgs.writeShellScriptBin "get-env" /*bash*/''
+pkgs.writeShellScriptBin "set-env" /*bash*/''
   source /home/yubikey/.env
 ''

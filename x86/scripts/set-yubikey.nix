@@ -24,5 +24,8 @@ pkgs.writeShellScriptBin "set-yubikey" /*bash*/''
   enable-pgp-touch
   enable-piv-touch
 
+  xfer-certs
+  xfer-keys
+
   eventlog "{'yubikey-set-completed': {'identity':'$P_IDENTITY', 'serial':'$YUBIKEY_ID'}}"
 ''

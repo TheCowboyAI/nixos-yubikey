@@ -1,4 +1,4 @@
 { pkgs }:
-pkgs.writeShellScriptBin "get-env" /*bash*/''
+pkgs.writeShellScriptBin "get-serials" /*bash*/''
 ykman list --serials
 ''

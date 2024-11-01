@@ -26,11 +26,8 @@ Or, use the following commands:
 
 The following scripts enable a comprehensive setup for YubiKey configuration. Ensure that all environment settings are loaded, as incomplete setup will trigger a warning.
 
-- **`set-yubikey`**: Configures a YubiKey for initial setup.
+- **`set-yubikey`**: Configures a YubiKey for initial setup. This will prompt you far a number of keys and whether to add it after displaying the serial number.
     - Event: `{ "yubikey-full-set": true }`
-
-- **`set-backup-key`**: Configures an additional YubiKey, using the primary key settings.
-    - Event: `{ "yubikey-additional-set": true }`
 
 - **`completely-reset-my-yubikey`**: Resets the YubiKey to its default state, removing all keys and PINs. This command should be used only if a full reset is required.
     - Event: `{ "yubikey-full-reset": true }` (returns `false` if reset fails)

@@ -1,4 +1,4 @@
 { pkgs }:
-pkgs.writeShellScriptBin "get-env" /*bash*/''
+pkgs.writeShellScriptBin "edit-env" /*bash*/''
   micro /home/yubikey/.env
 ''
