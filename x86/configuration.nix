@@ -85,7 +85,7 @@
     (import scripts/set-piv-pins.nix {inherit pkgs;})
     (import scripts/set-yubikey.nix {inherit pkgs;})
     (import scripts/verify-xfer.nix {inherit pkgs;})
-    (import scripts/xfer-cert.nix {inherit pkgs;})
+    (import scripts/xfer-certs.nix {inherit pkgs;})
     (import scripts/xfer-keys.nix {inherit pkgs;})
   ];
 
