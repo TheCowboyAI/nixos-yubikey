@@ -1,8 +1,6 @@
 { pkgs }:
 pkgs.writeShellScriptBin "make-domain-cert" /*bash*/''
-  function eventlog(event){
-    echo event>>$LOGFILE
-  }
+  function eventlog(evt) {echo evt >> $EVENTLOG}
 
   # sanity check //todo
   # if !$COMMON_NAME||!$COMMON_NAME||$COUNTRY then
@@ -11,14 +9,14 @@ pkgs.writeShellScriptBin "make-domain-cert" /*bash*/''
 
   # create private key for wildcard cert
   openssl ecparam -name $KEY_TYPE_SSL -genkey -noout -out wildcard.$COMMON_NAME.pem
-  keyevt = "{"wildcard-cert-private-key-created":{"wildcard-cert-private-key":"(cat wildcard.$COMMON_NAME.pem)"}}"
+  keyevt = "{'wildcard-cert-private-key-created':{'wildcard-cert-private-key':'(cat wildcard.$COMMON_NAME.pem)'}}"
   eventlog keyevt
 
   # create the wildcard certificate
   openssl req -new -key wildcard.$COMMON_NAME.pem \
     -subj "/C=$COUNTRY/ST=$REGION/L=$LOCALITY/O=$ORG_NAME/CN=*.$COMMON_NAME/emailAddress=$EMAIL" \
     -out wildcard.$COMMON_NAME.csr
-  certevt = "{"wildcard-csr-created":{"wildcard-csr":"wildcard.$COMMON_NAME.csr"}}"
+  certevt = "{'wildcard-csr-created':{'wildcard-csr':'wildcard.$COMMON_NAME.csr'}}"
   eventlog certevt
 
   wildcard.$COMMON_NAME.csr.conf<<EOF
@@ -56,7 +54,7 @@ pkgs.writeShellScriptBin "make-domain-cert" /*bash*/''
   # export its pubkey
   openssl pkey -in wildcard.$COMMON_NAME.pem -pubout -out wildcard.$COMMON_NAME.pub
 
-  signcertevt = "{"signed-wildcard-crt-created":{"wildcard-crt":"wildcard.$COMMON_NAME.crt"}}"
+  signcertevt = "{'signed-wildcard-crt-created':{'wildcard-crt':'wildcard.$COMMON_NAME.crt'}}"
   eventlog signcertevt
 ''
 

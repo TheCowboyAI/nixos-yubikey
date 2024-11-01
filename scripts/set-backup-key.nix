@@ -3,6 +3,8 @@
 # this just calls all the functions we normally use
 # DO NOT use this to link Yubikeys
 pkgs.writeShellScriptBin "set-backup-key" /*bash*/''
+  function eventlog(evt) {echo evt >> $EVENTLOG}
+
   xfer-keys
   xfer-cert
 
@@ -14,4 +16,6 @@ pkgs.writeShellScriptBin "set-backup-key" /*bash*/''
   enable-pgp-touch
 
   set-piv-pins
+
+  eventlog "{'backup-key-set': {'identity':'$P_IDENTITY', 'serial':'$YUBIKEY_ID'}}"
 ''

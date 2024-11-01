@@ -3,14 +3,17 @@
 # this just calls all the functions we normally use
 # DO NOT use this to link Yubikeys
 pkgs.writeShellScriptBin "set-yubikey" /*bash*/''
-  set-attributes
   make-certkey
   make-subkeys
   make-rootca
-  make-x509
+  make-rootca
+  make-tls-client
+  set-attributes
   set-pgp-pins
   enable-pgp-touch
   set-piv
   set-totp
   set-oauth
+
+  eventlog "{'yubikey-set-completed': {'identity':'$P_IDENTITY', 'serial':'$YUBIKEY_ID'}}"
 ''

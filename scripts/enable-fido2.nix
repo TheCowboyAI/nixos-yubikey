@@ -2,10 +2,10 @@
 let
 in
 pkgs.writeShellScriptBin "enable-fido2" /*bash*/''
-  function log(msg) {echo msg >> $LOGFILE} 
+  function eventlog(evt) {echo evt >> $EVENTLOG} 
 
   if !(ykman config list | grep -q 'FIDO2.*Enabled'); then
       ykman config enable fido2
-      log "FIDO2-enabled"
+      eventlog "{'fido-enabled': true}"
   fi
 ''
