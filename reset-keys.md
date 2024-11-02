@@ -5,11 +5,11 @@
 When rebooting the SD image, it logs in automatically.
 
    ```bash
-   reset-keys
+   completely-reset-my-yubikey
    ```
    The script will guide you through each step, prompting for necessary input and confirmation.
 
-   It does test itself during the reset, to perform more rigorous tests:
+   To perform more rigorous tests after WRITING to the keys (as in all the .env properties are tested)
 
    ```bash
    test-keys

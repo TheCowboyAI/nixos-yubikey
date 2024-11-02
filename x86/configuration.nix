@@ -59,34 +59,34 @@
     piv-agent
 
     #scripts
-    (import scripts/completely-reset-my-yubikey.nix {inherit pkgs;})
-    (import scripts/edit-env.nix {inherit pkgs;})
-    (import scripts/enable-fido2.nix {inherit pkgs;})
-    (import scripts/enable-pgp-touch.nix {inherit pkgs;})
-    (import scripts/enable-piv-touch.nix {inherit pkgs;})
-    (import scripts/get-env.nix {inherit pkgs;})
-    (import scripts/get-serials.nix {inherit pkgs;})
-    (import scripts/get-status.nix {inherit pkgs;})
-    (import scripts/make-certkey.nix {inherit pkgs;})
-    (import scripts/make-domain-cert.nix {inherit pkgs;})
-    (import scripts/make-rootca.nix {inherit pkgs;})
-    (import scripts/make-subkeys.nix {inherit pkgs;})
-    (import scripts/make-tls-client.nix {inherit pkgs;})
-    (import scripts/random-6.nix {inherit pkgs;})
-    (import scripts/random-8.nix {inherit pkgs;})
-    (import scripts/random-mgmt-key.nix {inherit pkgs;})
-    (import scripts/random-pass.nix {inherit pkgs;})
-    (import scripts/set-attributes.nix {inherit pkgs;})
-    (import scripts/set-env.nix {inherit pkgs;})
-    (import scripts/set-fido-pin.nix {inherit pkgs;})
-    (import scripts/set-fido-retries.nix {inherit pkgs;})
-    (import scripts/set-oauth-password.nix {inherit pkgs;})
-    (import scripts/set-pgp-pins.nix {inherit pkgs;})
-    (import scripts/set-piv-pins.nix {inherit pkgs;})
-    (import scripts/set-yubikey.nix {inherit pkgs;})
-    (import scripts/verify-xfer.nix {inherit pkgs;})
-    (import scripts/xfer-certs.nix {inherit pkgs;})
-    (import scripts/xfer-keys.nix {inherit pkgs;})
+    (import scripts/completely-reset-my-yubikey.nix { inherit pkgs; })
+    (import scripts/edit-env.nix { inherit pkgs; })
+    (import scripts/enable-fido2.nix { inherit pkgs; })
+    (import scripts/enable-pgp-touch.nix { inherit pkgs; })
+    (import scripts/enable-piv-touch.nix { inherit pkgs; })
+    (import scripts/get-env.nix { inherit pkgs; })
+    (import scripts/get-serials.nix { inherit pkgs; })
+    (import scripts/get-status.nix { inherit pkgs; })
+    (import scripts/make-certkey.nix { inherit pkgs; })
+    (import scripts/make-domain-cert.nix { inherit pkgs; })
+    (import scripts/make-rootca.nix { inherit pkgs; })
+    (import scripts/make-subkeys.nix { inherit pkgs; })
+    (import scripts/make-tls-client.nix { inherit pkgs; })
+    (import scripts/random-6.nix { inherit pkgs; })
+    (import scripts/random-8.nix { inherit pkgs; })
+    (import scripts/random-mgmt-key.nix { inherit pkgs; })
+    (import scripts/random-pass.nix { inherit pkgs; })
+    (import scripts/set-attributes.nix { inherit pkgs; })
+    (import scripts/set-env.nix { inherit pkgs; })
+    (import scripts/set-fido-pin.nix { inherit pkgs; })
+    (import scripts/set-fido-retries.nix { inherit pkgs; })
+    (import scripts/set-oauth-password.nix { inherit pkgs; })
+    (import scripts/set-pgp-pins.nix { inherit pkgs; })
+    (import scripts/set-piv-pins.nix { inherit pkgs; })
+    (import scripts/set-yubikey.nix { inherit pkgs; })
+    (import scripts/verify-xfer.nix { inherit pkgs; })
+    (import scripts/xfer-certs.nix { inherit pkgs; })
+    (import scripts/xfer-keys.nix { inherit pkgs; })
   ];
 
   services.udev.packages = with pkgs; [
@@ -97,30 +97,16 @@
   services.pcscd.enable = true;
   services.yubikey-agent.enable = true;
 
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-    settings = {
-      personal-cipher-preferences = "AES256 AES192 AES";
-      personal-digest-preferences = "SHA512 SHA384 SHA256";
-      personal-compress-preferences = "ZLIB BZIP2 ZIP Uncompressed";
-      default-preference-list = "SHA512 SHA384 SHA256 AES256 AES192 AES ZLIB BZIP2 ZIP Uncompressed";
-      cert-digest-algo = "SHA512";
-      s2k-digest-algo = "SHA512";
-      s2k-cipher-algo = "AES256";
-      charset = "utf-8";
-      no-comments = true;
-      no-emit-version = true;
-      no-greeting = true;
-      keyid-format = "0xlong";
-      list-options = "show-uid-validity";
-      verify-options = "show-uid-validity";
-      with-fingerprint = true;
-      require-cross-certification = true;
-      no-symkey-cache = true;
-      armor = true;
-      use-agent = true;
-      throw-keyids = true;
+  programs.gnupg = {
+    dirmngr.enable = true;
+    agent = {
+      enable = true;
+      enableSSHSupport = true;
+      enableBrowserSocket = true;
+      settings = {
+        default-cache-ttl = "600";
+        max-cache-ttl = "7200";
+      };
     };
   };
 
