@@ -16,6 +16,7 @@
     (import ./make-rootca.nix { inherit pkgs; })
     (import ./make-subkeys.nix { inherit pkgs; })
     (import ./make-tls-client.nix { inherit pkgs; })
+    (import ./move-revocation.nix { inherit pkgs; })
     (import ./random-6.nix { inherit pkgs; })
     (import ./random-8.nix { inherit pkgs; })
     (import ./random-mgmt-key.nix { inherit pkgs; })
