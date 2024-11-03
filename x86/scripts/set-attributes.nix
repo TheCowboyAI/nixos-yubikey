@@ -1,19 +1,25 @@
 { pkgs }:
 pkgs.writeShellScriptBin "set-attributes" /*bash*/''
-    function eventlog {
-    local evt="$1"
-    echo "$evt" >> "$EVENTLOG"
-}
+      function eventlog {
+      local evt="$1"
+      echo "$evt" >> "$EVENTLOG"
+  }
 
-    export DEVICE=$(ykman list --serials)
+    YUBIKEY_ID=$(ykman list --serials)
 
     gpg --command-fd=0 --pinentry-mode=loopback --edit-card <<EOF
-    admin
-    login
-    $P_IDENTITY
-    $GPG_PIN
-    quit
-    EOF
+  admin
+  login
+  $P_IDENTITY
+  $GPG_PIN
+  quit
+  EOF
+    
+  attrevt=$( jq -n \
+      --arg sn "$YUBIKEY_ID" \
+      --arg id "$P_IDENTITY" \
+      "{YubikeyAttributesSet:{yubikey: $sn, identity: $id}}"
+  )
 
-    eventlog "{'yubikey-attributes-set':'$P_IDENTITY'}"
+  eventlog "$attrevt"
 ''

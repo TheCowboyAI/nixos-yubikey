@@ -1,16 +1,21 @@
 { pkgs }:
 pkgs.writeShellScriptBin "enable-pgp-touch" /*bash*/''
-  function eventlog {
-    local evt="$1"
-    echo "$evt" >> "$EVENTLOG"
-} 
+    function eventlog {
+      local evt="$1"
+      echo "$evt" >> "$EVENTLOG"
+  } 
 
-  ykman openpgp keys set-touch dec on
-  eventlog "{'pgp-encryption-touch-enabled':true}"
+  local enabled="on"
 
-  ykman openpgp keys set-touch sig on
-  eventlog "{'pgp-signature-touch-enabled':true}"
-  
-  ykman openpgp keys set-touch aut on
-  eventlog "{'pgp-authetication-touch-enabled':true}"
+  ykman openpgp keys set-touch dec $enabled
+  ykman openpgp keys set-touch sig $enabled
+  ykman openpgp keys set-touch aut $enabled
+
+  pgpauthevt=$( jq -n \
+    -- arg encr "$enabled" \
+    -- arg sign "$enabled" \
+    -- arg auth "$enabled" \
+    "{PgpTouchPolicySet: {encryption-touch: $encr, signature-touch $sign, authentication-touch: $auth}}"
+  )
+  eventlog "$pgpauthevt"
 ''
