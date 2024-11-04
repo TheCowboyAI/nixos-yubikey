@@ -9,8 +9,8 @@ pkgs.writeShellScriptBin "enable-fido2" /*bash*/''
     ykman config $enabled fido2
   
     fidoevt=$( jq -n \
-      --arg e ("enable"=$enabled) \
-      "{FidoEnableSet: {fido-enabled: $e}}"
+      --arg e $enabled \
+    "{FidoEnableSet: {fido-enabled: $e}}"
     )
     eventlog "$fidoevt"
   fi

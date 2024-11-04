@@ -15,7 +15,7 @@ pkgs.writeShellScriptBin "xfer-keys" /*bash*/''
 
   for (( i=1; i<=yubikeys; i++ )); do
   # exiting on a subsequent yubikey is going to possibly mess up gpg shadow copies, we have to test for that, this is a fairly crude loop
-  if !(add-key)
+  if ! add-key; then
     exit 1
   fi
 

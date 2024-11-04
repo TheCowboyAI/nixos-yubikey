@@ -4,8 +4,8 @@
 # DO NOT use this to link Yubikeys
 pkgs.writeShellScriptBin "set-yubikey" /*bash*/''
     # Add Current Yubikey
-    if !(add-key)
-      exit
+    if ! add-key; then
+      exit 1
     fi
 
     # make all the keys first
