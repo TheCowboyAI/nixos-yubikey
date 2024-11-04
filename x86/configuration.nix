@@ -123,6 +123,9 @@
     NixOS Yubikey Configuration
     ==========================
 
-    For instructions type `help`
+    For instructions type: `help`
+
+    To begin type: `set-yubikey`
+    
   '';
 }

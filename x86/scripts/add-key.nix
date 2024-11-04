@@ -1,13 +1,14 @@
 { pkgs }:
 pkgs.writeShellScriptBin "add-key" /*bash*/''
-  sn=$(get-serials)
+  local sn=$(get-serials)
   
-  read -p "Do you want to add this Yubikey?: $sn" ok
+  read -p "Do you want to add this Yubikey?: $sn: " ok
   
   if [[ "$ok" = "Y" || "$ok" = "y" ]]; then
-    YUBIKEY_ID=$sn
-    YUBIKEYS+="$sn"
+    export YUBIKEY_ID="$sn"
+    export YUBIKEYS+="$sn"
   else
-    exit 1
+    # indicate it failed
+    exit 1 
   fi
 ''
