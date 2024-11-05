@@ -6,11 +6,13 @@ function eventlog {
 Event=$( jq -n \
   --arg arg-name "arg-value" \
   "{EventName: {key-name: $arg-name}}"
+)
 
 CompoundEvent=$( jq -n \
   --arg arg-name "arg-value" \
   --arg arg2-name "arg2-value" \
   --arg arg3-name "arg3-value" \
   "{EventName: {key-name: $arg-name, key2-name: $arg2-name, key3-name: $arg3-name}}"
+)
 
 eventlog "$Event"

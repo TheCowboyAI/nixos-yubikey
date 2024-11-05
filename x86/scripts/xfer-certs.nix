@@ -5,7 +5,7 @@ pkgs.writeShellScriptBin "xfer-certs" /*bash*/''
       echo "$evt" >> "$EVENTLOG"
   }
 
-    # there isn't anything special for ssl tranfers, that is only for gpg getting in the way.
+    # there isn't anything special for ssl transfers, that is only for gpg getting in the way.
     # there is room for more certs, just repeat for more certs and incerment up to 95
 
     ykman piv certificates import --subject 82 -m "$MGMT_KEY $COMMON_NAME".crt

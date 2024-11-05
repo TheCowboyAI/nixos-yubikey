@@ -6,18 +6,12 @@ pkgs.writeShellScriptBin "xfer-keys" /*bash*/''
   }
 
   # begin a loop for key(s)...
-  read -p "How many Yubikeys? \nWe MUST know this to transfer properly,\nenter 1 to 5:" yubikeys
+  savepgp=""
+    # exiting on a subsequent yubikey is going to possibly mess up gpg shadow copies, we have to test for that, this is a fairly crude loop
+  read -n 1 -p "Will this be the last key? " lastkey
   # we only support 1-5, which you can change as a sanity check
   # currently this may do weird things to the state of gpg-agent if you abort
-  if [[yubikeys < 1 || yubikeys > 5]]; then
-    exit
-  fi
-
-  for (( i=1; i<=yubikeys; i++ )); do
-  # exiting on a subsequent yubikey is going to possibly mess up gpg shadow copies, we have to test for that, this is a fairly crude loop
-  if ! add-key; then
-    exit 1
-  fi
+  savepgp=$([[ "$lastkey" == "Y" || "$lastkey" == "y" ]] && echo "save" || echo "")
 
   # a hack to force gpg to see a new yubikey when we swap them
   gpg-connect-agent "scd serialno" "learn --force" /bye
@@ -29,7 +23,7 @@ pkgs.writeShellScriptBin "xfer-keys" /*bash*/''
   1
   $CERTIFY_PASS
   $ADMIN_PIN
-  $(if [[ "$i" == "$yubikeys" ]]; then echo "save"; fi)
+  $savepgpc
   EOF
 
   # signing key
@@ -39,7 +33,7 @@ pkgs.writeShellScriptBin "xfer-keys" /*bash*/''
   2
   $CERTIFY_PASS
   $ADMIN_PIN
-  $(if [[ "$i" == "$yubikeys" ]]; then echo "save"; fi)
+  $savepgp
   EOF
 
   # encrypt key
@@ -49,7 +43,7 @@ pkgs.writeShellScriptBin "xfer-keys" /*bash*/''
   3
   $CERTIFY_PASS
   $ADMIN_PIN
-  $(if [[ "$i" == "$yubikeys" ]]; then echo "save"; fi)
+  $savepgp
   EOF
 
     keysevt=$( jq -n \
@@ -59,5 +53,4 @@ pkgs.writeShellScriptBin "xfer-keys" /*bash*/''
     )
 
     eventlog "$keysevt"
-  done
 ''

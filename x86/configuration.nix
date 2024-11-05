@@ -12,6 +12,8 @@
       ./scripts
     ];
 
+  add-key.enable = true;
+
   networking.hostName = "nixos-yubikey";
   networking = {
     useDHCP = false;

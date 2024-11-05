@@ -1,45 +1,44 @@
 { pkgs }:
-# Set a single yubikey all at once
-# this just calls all the functions we normally use
-# DO NOT use this to link Yubikeys
 pkgs.writeShellScriptBin "set-yubikey" /*bash*/''
+      # make all the keys first
+      # gpg
+      make-certkey
+      make-subkeys
+
+      # ssl
+      make-rootca
+      make-domain-cert
+      make-tls-client
+
     # Add Current Yubikey
-    if ! add-key; then
-      exit 1
-    fi
+    while add-key; do
 
-    # make all the keys first
-    # gpg
-    make-certkey
-    make-subkeys
+      # other scripts depend on the $MGMT_KEY
+      set-piv-pins
 
-    # ssl
-    make-rootca
-    make-domain-cert
-    make-tls-client
+      set-attributes
 
-    # other scripts depend on the $MGMT_KEY
-    set-piv-pins
+      set-fido-pin
+      set-fido-retries
+      set-pgp-pins
+      set-oauth-password
 
-    set-attributes
+      enable-fido2
+      enable-pgp-touch
+      enable-piv-touch
 
-    set-fido-pin
-    set-fido-retries
-    set-pgp-pins
-    set-oauth-password
+      xfer-certs
+      xfer-keys
 
-    enable-fido2
-    enable-pgp-touch
-    enable-piv-touch
+      setyubikeyevt=$( jq -n \
+        --arg id "$P_IDENTITY" \
+        --arg sn "$YUBIKEY_ID" \
+        "{YubikeySetCompleted: {serial: $sn, identity: $id}}"
+      ) 
 
-    xfer-certs
-    xfer-keys
+    eventlog "$setyubikeyevt"
 
-    setyubikeyevt=$( jq -n \
-      --arg id "$P_IDENTITY" \
-      --arg sn "$YUBIKEYS" \
-      "{YubikeySetCompleted: {identity: $id, serials: $sn}}"
-    ) 
-
-  eventlog "$setyubikeyevt"
+  read n 1 -p "Please change Yubikeys and press any key..." ok
+  
+  done
 ''

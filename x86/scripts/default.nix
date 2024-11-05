@@ -1,8 +1,10 @@
 { pkgs, ... }:
 {
+  imports = [
+    ./add-key.nix
+  ];
   # System packages
   environment.systemPackages = [
-    (import ./add-key.nix { inherit pkgs; })
     (import ./completely-reset-my-yubikey.nix { inherit pkgs; })
     (import ./edit-env.nix { inherit pkgs; })
     (import ./enable-fido2.nix { inherit pkgs; })

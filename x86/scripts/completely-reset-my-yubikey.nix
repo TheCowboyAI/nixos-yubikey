@@ -10,7 +10,7 @@ pkgs.writeShellScriptBin "completely-reset-my-yubikey" /*bash*/''
 
   sn=$(get-serials)
   
-  read -p "Do you want to COMPLETELY RESET this Yubikey? serial number: $sn " ok
+  read n 1 -p "Do you want to COMPLETELY RESET this Yubikey? serial number: $sn " ok
   if [[ "$ok" = "Y" || "$ok" = "y" ]]; then
     export YUBIKEY_ID="$sn"
   else
