@@ -1,15 +1,15 @@
-{ pkgs }:
-pkgs.writeShellScriptBin "set-oauth-password" /*bash*/''
-    function eventlog {
-      local evt="$1"
-      echo "$evt" >> "$EVENTLOG"
-  }
-
-  ykman oauth access change-password -n $OAUTH_PASSWORD
-
-  oauthevt=$( jq -n \
-    --arg pwd "$OAUTH_PASSWORD" \
-    "{OauthPasswordSet: {oauth-password: $pwd}}"
-  )
-  eventlog $fidoevt
-''
+{ lib, config, pkgs, ... }:
+let
+  name = "set-oauth-password";
+  cfg = config.${name};
+  path = builtins.toString ./${name}.bash;
+  script = pkgs.writeShellScriptBin "${name}" (builtins.readFile path);
+in
+{
+  options.${name}.enable = lib.mkEnableOption "Enable ${name}";
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = [
+      script
+    ];
+  };
+}

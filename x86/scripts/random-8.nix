@@ -1,4 +1,15 @@
-{ pkgs }:
-pkgs.writeShellScriptBin "random-8" /*bash*/''
-  echo $(LC_ALL=C tr -dc '0-9' < /dev/urandom | fold -w8 | head -1)
-''
+{ lib, config, pkgs, ... }:
+let
+  name = "random-8";
+  cfg = config.${name};
+  path = builtins.toString ./${name}.bash;
+  script = pkgs.writeShellScriptBin "${name}" (builtins.readFile path);
+in
+{
+  options.${name}.enable = lib.mkEnableOption "Enable ${name}";
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = [
+      script
+    ];
+  };
+}

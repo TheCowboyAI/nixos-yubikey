@@ -1,21 +1,15 @@
-{ pkgs }:
-pkgs.writeShellScriptBin "enable-pgp-touch" /*bash*/''
-    function eventlog {
-      local evt="$1"
-      echo "$evt" >> "$EVENTLOG"
-  } 
-
-  local enabled="on"
-
-  ykman openpgp keys set-touch dec $enabled
-  ykman openpgp keys set-touch sig $enabled
-  ykman openpgp keys set-touch aut $enabled
-
-  pgpauthevt=$( jq -n \
-    -- arg encr "$enabled" \
-    -- arg sign "$enabled" \
-    -- arg auth "$enabled" \
-    "{PgpTouchPolicySet: {encryption-touch: $encr, signature-touch $sign, authentication-touch: $auth}}"
-  )
-  eventlog "$pgpauthevt"
-''
+{ lib, config, pkgs, ... }:
+let
+  name = "enable-pgp-touch";
+  cfg = config.${name};
+  path = builtins.toString ./${name}.bash;
+  script = pkgs.writeShellScriptBin "${name}" (builtins.readFile path);
+in
+{
+  options.${name}.enable = lib.mkEnableOption "Enable ${name}";
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = [
+      script
+    ];
+  };
+}

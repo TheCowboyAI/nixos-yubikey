@@ -1,56 +1,15 @@
-{ pkgs }:
-pkgs.writeShellScriptBin "xfer-keys" /*bash*/''
-  function eventlog {
-    local evt="$1"
-    echo "$evt" >> "$EVENTLOG"
-  }
-
-  # begin a loop for key(s)...
-  savepgp=""
-    # exiting on a subsequent yubikey is going to possibly mess up gpg shadow copies, we have to test for that, this is a fairly crude loop
-  read -n 1 -p "Will this be the last key? " lastkey
-  # we only support 1-5, which you can change as a sanity check
-  # currently this may do weird things to the state of gpg-agent if you abort
-  savepgp=$([[ "$lastkey" == "Y" || "$lastkey" == "y" ]] && echo "save" || echo "")
-
-  # a hack to force gpg to see a new yubikey when we swap them
-  gpg-connect-agent "scd serialno" "learn --force" /bye
-
-        # auth key    
-  gpg --command-fd=0 --pinentry-mode=loopback --edit-key $KEYID <<EOF
-  key 1
-  keytocard
-  1
-  $CERTIFY_PASS
-  $ADMIN_PIN
-  $savepgpc
-  EOF
-
-  # signing key
-  gpg --command-fd=0 --pinentry-mode=loopback --edit-key $KEYID <<EOF
-  key 2
-  keytocard
-  2
-  $CERTIFY_PASS
-  $ADMIN_PIN
-  $savepgp
-  EOF
-
-  # encrypt key
-  gpg --command-fd=0 --pinentry-mode=loopback --edit-key $KEYID <<EOF
-  key 3
-  keytocard
-  3
-  $CERTIFY_PASS
-  $ADMIN_PIN
-  $savepgp
-  EOF
-
-    keysevt=$( jq -n \
-      --arg id "$YUBIKEY_ID" \
-      --arg key "$KEYID" \
-      "{PgpSubkeysTransferred: {yubikey: $id, key: $key}}" 
-    )
-
-    eventlog "$keysevt"
-''
+{ lib, config, pkgs, ... }:
+let
+  name = "xfer-keys";
+  cfg = config.${name};
+  path = builtins.toString ./${name}.bash;
+  script = pkgs.writeShellScriptBin "${name}" (builtins.readFile path);
+in
+{
+  options.${name}.enable = lib.mkEnableOption "Enable ${name}";
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = [
+      script
+    ];
+  };
+}

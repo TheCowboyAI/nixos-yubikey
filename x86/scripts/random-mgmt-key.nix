@@ -1,7 +1,15 @@
-{ pkgs }:
-pkgs.writeShellScriptBin "random-mgmt-key" /*bash*/''
-  echo $(LC_ALL=C tr -dc 'A-Z1-9' < /dev/urandom | \
-  tr -d "1IOS5U" | fold -w 48 | sed "-es/./ /"{1..26..5} | \
-  cut -c2- | tr " " "-" | head -1) ;
-''
-
+{ lib, config, pkgs, ... }:
+let
+  name = "random-mgmt-key";
+  cfg = config.${name};
+  path = builtins.toString ./${name}.bash;
+  script = pkgs.writeShellScriptBin "${name}" (builtins.readFile path);
+in
+{
+  options.${name}.enable = lib.mkEnableOption "Enable ${name}";
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = [
+      script
+    ];
+  };
+}

@@ -1,14 +1,15 @@
-{ pkgs }:
-pkgs.writeShellScriptBin "enable-piv-touch" /*bash*/''
-    function eventlog {
-      local evt="$1"
-      echo "$evt" >> "$EVENTLOG"
-  }
-
-    ykman piv access set-touch-policy always --management-key $MGMT_KEY 9a
-    pivtouchevt=$( jq -n \
-      -- arg enabled true \
-      "{PivTouchPolicySet: {piv-touch: $enabled}}"
-    )
-    eventlog "$pivtouchevt"
-''
+{ lib, config, pkgs, ... }:
+let
+  name = "enable-piv-touch";
+  cfg = config.${name};
+  path = builtins.toString ./${name}.bash;
+  script = pkgs.writeShellScriptBin "${name}" (builtins.readFile path);
+in
+{
+  options.${name}.enable = lib.mkEnableOption "Enable ${name}";
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = [
+      script
+    ];
+  };
+}

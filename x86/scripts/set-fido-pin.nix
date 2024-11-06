@@ -1,15 +1,15 @@
-{ pkgs }:
-pkgs.writeShellScriptBin "set-fido-pin" /*bash*/''
-  function eventlog {
-    local evt="$1"
-    echo "$evt" >> "$EVENTLOG"
-  }
-
-  ykman fido access change-pin --new-pin "$FIDO2_PIN"
-
-  fidoevt=$( jq -n \
-      --arg pin "$FIDO2_PIN" \
-      "{FidoAccessPinSet: {fido-pin: $pin}}"
-    )
-  eventlog $fidoevt
-''
+{ lib, config, pkgs, ... }:
+let
+  name = "set-fido-pin";
+  cfg = config.${name};
+  path = builtins.toString ./${name}.bash;
+  script = pkgs.writeShellScriptBin "${name}" (builtins.readFile path);
+in
+{
+  options.${name}.enable = lib.mkEnableOption "Enable ${name}";
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = [
+      script
+    ];
+  };
+}

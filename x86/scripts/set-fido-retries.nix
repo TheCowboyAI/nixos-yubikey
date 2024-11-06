@@ -1,15 +1,15 @@
-{ pkgs }:
-pkgs.writeShellScriptBin "set-fido-retries" /*bash*/''
-    function eventlog {
-      local evt="$1"
-      echo "$evt" >> "$EVENTLOG"
-  }
-
-    ykman fido access set-pin-retries --pin-retries "$FIDO_RETRIES" --uv-retries "$FIDO_RETRIES" --pin "$FIDO2_PIN"
-
-    fidoevt=$( jq -n \
-      --arg retries "$FIDO2_RETRIES" \
-      "{FidoPinRetriesSet: {fido-retries: $retries}}"
-    )
-    eventlog $fidoevt
-''
+{ lib, config, pkgs, ... }:
+let
+  name = "set-fido-retries";
+  cfg = config.${name};
+  path = builtins.toString ./${name}.bash;
+  script = pkgs.writeShellScriptBin "${name}" (builtins.readFile path);
+in
+{
+  options.${name}.enable = lib.mkEnableOption "Enable ${name}";
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = [
+      script
+    ];
+  };
+}
