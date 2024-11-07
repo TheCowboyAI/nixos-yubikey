@@ -93,6 +93,8 @@ An identity usually comprises your name and email address. We recommend using a 
 
 #### Key Management and Rotation
 
+**[Key Management Plan](./key-plan.md)**: A KMP is essential for any business today. We have too many keys to manage without one.
+
 **Key Rotation**: Regular key rotation (e.g., every two years) is recommended to comply with standards such as GDPR, HIPAA, and PCI-DSS. Key rotation involves creating a trust link between old and new keys to maintain continuity.
 
 **GPG Keys**:

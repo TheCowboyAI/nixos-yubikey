@@ -1,4 +1,7 @@
 # Key Management Plan (KMP)
+
+The purpose of this Key Management Plan is to establish a comprehensive framework for managing cryptographic keys within the CIM (Composable Information Machine) system. This plan outlines the policies, procedures, and workflows for key creation, usage, renewal, and revocation, ensuring the security and integrity of our systems and communications.
+
 A KMP is essential for any business today because it serves as a structured framework to protect sensitive data, control access, and minimize security risks associated with cryptographic keys. Here are several reasons why having a robust KMP is crucial:
 1. Data Security and Confidentiality
 

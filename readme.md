@@ -20,7 +20,7 @@ This process outlines a secure method for creating and managing Yubikeys using a
    After booting the secure environment, you set up environment variables, such as identity and key passphrases, and log the process for audit purposes. The log file and private keys can be encrypted and stored on the SD card.
 
 6. **FIDO2 and TOTP**:  
-   These additional authentication methods are supported, allowing for secure, passwordless logins (FIDO2) and time-based one-time passwords (TOTP).
+   These additional authentication methods are supported, allowing for secure, passkey logins (FIDO2) and time-based one-time passwords (TOTP) with the Yubico Authenticator.
 
 ### Key Steps:
 - Create air-gapped environment using NixOS.
@@ -28,5 +28,6 @@ This process outlines a secure method for creating and managing Yubikeys using a
 - Generate revocable subkeys for GPG, SSH, and SSL usage.
 - Back up private keys and store them securely.
 - Register Yubikeys with identity and authentication services (FIDO2, TOTP).
+- test all settings
 
 This process ensures secure management and usage of Yubikeys, minimizing risks while allowing easy key rotation and recovery.
