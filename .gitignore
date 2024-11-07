@@ -5,6 +5,8 @@ result
 result-*
 nixos-yubikey-sd-card.img
 /secrets
+/secrets
 .secrets-*
 .secrets.yaml
+
 .direnv/
