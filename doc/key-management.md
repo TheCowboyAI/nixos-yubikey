@@ -1,6 +1,6 @@
 ## Key Management Plan for CIM
 
-### 1. **Key Hierarchy and Structure**
+### Key Hierarchy and Structure
    - **Certify Key (Root Key):**  
      - Acts as the master key (root) incorporated into all GPG keys.
      - Used to generate root signing, encryption, and authorization keys for each individual.
@@ -16,7 +16,7 @@
      - Coupled with VaultWarden for password/passkey management and integrated with OpenLDAP and FreeRADIUS for organizational account management.
      - Coupled with a NATS User through Ldap association
 
-### 2. **Key Management Practices**
+### Key Management Practices
    - **[Regulatory Compliance](./regulatory.md)** 
    - **Key Rotation and Renewal:**
      - **SSL Certificates**: Renew every 5 years.
@@ -38,7 +38,7 @@
      - Utilize `gpg-agent` as an SSH agent to enable encrypted connections.
      - Maintain configurations to automatically lock and expire sessions after periods of inactivity.
 
-### 3. **Access Control and Distribution**
+### Access Control and Distribution
    - **Fido2**:
      - Passkey integration with Vaultwarden
    - **OpenLDAP and FreeRADIUS Integration**:
@@ -48,7 +48,7 @@
      - All key usage must adhere to CIM’s access control policies.
      - Periodic audits to ensure compliance with key management policies.
 
-### 4. **Operational Procedures**
+### Operational Procedures
    - **Key Creation and Distribution**:
      - Certify Keys and derived keys are created by security personnel in a controlled environment.
      - YubiKeys are provisioned with required keys and distributed to authorized users securely.
@@ -63,7 +63,7 @@
      - Regularly review logs for key usage and access attempts.
      - Perform audits to verify adherence to key management policies and identify any irregularities.
 
-### 5. **Integration**
+### Integration
    - **VaultWarden**:
      - Serve as the primary passkey and password manager, tightly integrated with YubiKeys for enhanced security.
    - **NATS & JWT**:
