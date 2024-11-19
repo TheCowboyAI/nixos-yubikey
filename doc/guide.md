@@ -2,8 +2,6 @@
 
 This guide outlines the secure, systematic process for initializing YubiKeys in a controlled environment.
 
-For further background on YubiKey usage and options, refer to our [Help Guide](./help.md).
-
 ### Secure Environment Setup
 
 Utilize the provided Nix Flake configuration to create a bootable USB or SD card that initializes a secure, **air-gapped** environment. This environment is specifically configured for YubiKey setup and is intentionally minimized for security—only necessary tools are included, and network functions are disabled or removed. The SD card serves as a backup for this process and provides a secure location to store private keys in a more resilient manner than on paper.

@@ -1,0 +1,19 @@
+{
+  CertifyKeyCreated: 
+    {
+      org:
+        {
+          name:"",
+          id:""
+        },
+      key:
+        {
+          passphrase:"",
+          type:"", 
+          publickey:"", 
+          fingerprint:"", 
+          privatekey:""
+        }
+    }
+}
+

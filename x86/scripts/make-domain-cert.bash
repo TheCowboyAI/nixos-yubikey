@@ -19,7 +19,7 @@ openssl req -new -key wildcard.$COMMON_NAME.pem \
 csrevt=$( jq -n \
 --arg csr "$(cat wildcard.$COMMON_NAME.csr)" \
 "{WildcardCsrCreated: {wildcard-csr: $csr}}")
-eventlog "$certevt"
+eventlog "$csrevt"
 
 wildcard."$COMMON_NAME".csr.conf<<EOF
 [req]

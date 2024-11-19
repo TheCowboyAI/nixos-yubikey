@@ -8,9 +8,6 @@
     make-domain-cert
     make-tls-client
 
-  # Add Current Yubikey
-  while add-key; do
-
     # other scripts depend on the $MGMT_KEY
     set-piv-pins
 

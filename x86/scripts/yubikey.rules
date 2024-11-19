@@ -1,0 +1,2 @@
+ACTION::"remove", ENV{DEVTYPE}::"usb_device", ENV{PRODUCT}::"1050/407*", RUN+:"remove-key"
+ACTION::"add", ENV{DEVTYPE}::"usb_device", ENV{ID_BUS}::"usb", ENV{PRODUCT}::"1050/407*", RUN+:"add-key"

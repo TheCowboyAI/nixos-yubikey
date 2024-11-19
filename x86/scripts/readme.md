@@ -4,6 +4,149 @@ Each script appends activities to a log file, `LOGFILE`, named `yubikey_setup_$(
 
 Each script also logs events to `EVENTLOG` with a JSON format named `yubikey_setup_$(date +%F).events.json`, providing a full backup of all configurations, including keys and PINs for continuity and recovery purposes. If your security policy advises against logging, set the following environment variables to disable logging:
 
+You want logging, as it operates a StateMachine.
+All these services are Idempotent...
+If they have already completed successfully, they don't run again.  
+
+State Transitions are controlled by:
+`$CURRENT_STATE` and `$PREV_STATE`
+`$CURRENT_STATE` may only transition to one of to states a success or a failure.
+
+The State Graph is:
+
+```mermaid
+stateDiagram-v2
+    [*] --> make_certkey
+
+    state make_certkey {
+        [*] --> Running
+        Running --> Completed : $make_certkeyCompleted
+        Running --> Failed : $make_certkeyFailed
+    }
+    make_certkey --> make_subkeys : Completed
+    make_certkey --> [*] : Failed
+
+    state make_subkeys {
+        [*] --> Running
+        Running --> Completed : $make_subkeysCompleted
+        Running --> Failed : $make_subkeysFailed
+    }
+    make_subkeys --> make_rootca : Completed
+    make_subkeys --> [*] : Failed
+
+    state make_rootca {
+        [*] --> Running
+        Running --> Completed : $make_rootcaCompleted
+        Running --> Failed : $make_rootcaFailed
+    }
+    make_rootca --> make_domain_cert : Completed
+    make_rootca --> [*] : Failed
+
+    state make_domain_cert {
+        [*] --> Running
+        Running --> Completed : $make_domain_certCompleted
+        Running --> Failed : $make_domain_certFailed
+    }
+    make_domain_cert --> make_tls_client : Completed
+    make_domain_cert --> [*] : Failed
+
+    state make_tls_client {
+        [*] --> Running
+        Running --> Completed : $make_tls_clientCompleted
+        Running --> Failed : $make_tls_clientFailed
+    }
+    make_tls_client --> set_piv_pins : Completed
+    make_tls_client --> [*] : Failed
+
+    state set_piv_pins {
+        [*] --> Running
+        Running --> Completed : $set_piv_pinsCompleted
+        Running --> Failed : $set_piv_pinsFailed
+    }
+    set_piv_pins --> set_attributes : Completed
+    set_piv_pins --> [*] : Failed
+
+    state set_attributes {
+        [*] --> Running
+        Running --> Completed : $set_attributesCompleted
+        Running --> Failed : $set_attributesFailed
+    }
+    set_attributes --> set_fido_pin : Completed
+    set_attributes --> [*] : Failed
+
+    state set_fido_pin {
+        [*] --> Running
+        Running --> Completed : $set_fido_pinCompleted
+        Running --> Failed : $set_fido_pinFailed
+    }
+    set_fido_pin --> set_fido_retries : Completed
+    set_fido_pin --> [*] : Failed
+
+    state set_fido_retries {
+        [*] --> Running
+        Running --> Completed : $set_fido_retriesCompleted
+        Running --> Failed : $set_fido_retriesFailed
+    }
+    set_fido_retries --> set_pgp_pins : Completed
+    set_fido_retries --> [*] : Failed
+
+    state set_pgp_pins {
+        [*] --> Running
+        Running --> Completed : $set_pgp_pinsCompleted
+        Running --> Failed : $set_pgp_pinsFailed
+    }
+    set_pgp_pins --> set_oauth_password : Completed
+    set_pgp_pins --> [*] : Failed
+
+    state set_oauth_password {
+        [*] --> Running
+        Running --> Completed : $set_oauth_passwordCompleted
+        Running --> Failed : $set_oauth_passwordFailed
+    }
+    set_oauth_password --> enable_fido : Completed
+    set_oauth_password --> [*] : Failed
+
+    state enable_fido {
+        [*] --> Running
+        Running --> Completed : $enable_fidoCompleted
+        Running --> Failed : $enable_fidoFailed
+    }
+    enable_fido --> enable_pgp_touch : Completed
+    enable_fido --> [*] : Failed
+
+    state enable_pgp_touch {
+        [*] --> Running
+        Running --> Completed : $enable_pgp_touchCompleted
+        Running --> Failed : $enable_pgp_touchFailed
+    }
+    enable_pgp_touch --> enable_piv_touch : Completed
+    enable_pgp_touch --> [*] : Failed
+
+    state enable_piv_touch {
+        [*] --> Running
+        Running --> Completed : $enable_piv_touchCompleted
+        Running --> Failed : $enable_piv_touchFailed
+    }
+    enable_piv_touch --> xfer_certs : Completed
+    enable_piv_touch --> [*] : Failed
+
+    state xfer_certs {
+        [*] --> Running
+        Running --> Completed : $xfer_certsCompleted
+        Running --> Failed : $xfer_certsFailed
+    }
+    xfer_certs --> xfer_keys : Completed
+    xfer_certs --> [*] : Failed
+
+    state xfer_keys {
+        [*] --> Running
+        Running --> Completed : $xfer_keysCompleted
+        Running --> Failed : $xfer_keysFailed
+    }
+    xfer_keys --> [*] : Completed
+    xfer_keys --> [*] : Failed
+```
+
 ```bash
 export LOGFILE=/dev/null
 export EVENTLOG=/dev/null

@@ -1,0 +1,30 @@
+{
+  "initial": "initial",
+  "states": {
+    "initial": {
+      "on": {
+        "search": "searching"
+      }
+    },
+    "searching": {
+      "on": {
+        "results": "setting_key"
+      }
+    },
+    "setting_key": {
+      "on": {
+        "key_set": "set-key"
+      }
+    },
+    "search": {
+      "on": {
+        "results": "set-key"
+      }
+    },
+    "search": {
+      "on": {
+        "results": "set-key"
+      }
+    }
+  }
+}
