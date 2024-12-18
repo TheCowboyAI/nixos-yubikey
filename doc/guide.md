@@ -108,13 +108,13 @@ An identity usually comprises your name and email address. We recommend using a 
    - **Other Supplied Keys in /secrets**
      - if we detect additional certificates by following the naming convention of:
        - $COMMON_NAME.<any.valid.domain>.crt and
-       - $COMMON_NAME.<any.valid.domain>.pem (for the private key)
+       - $COMMON_NAME.<any.valid.domain>.key (for the private key)
        - they will be copied into the next available slots
        - for example... a cloudflare origin server cert and a client cert for it...
        - they should be saved into /secrets as:
        - example.com.cf.origin.crt (we don't get a private key)
        - example.com.cf.client.crt
-       - example.com.cf.client.pem (the private key, for safe keeping, it won't go on the yubikey directly)
+       - example.com.cf.client.key (the private key, for safe keeping, it won't go on the yubikey directly)
        - the name of the crt and the pem must match for this convention.
        - they will go into slots 85 and 86
 

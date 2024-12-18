@@ -1,6 +1,6 @@
 { lib, config, pkgs, ... }:
 let
-  name = "set-fido-retries";
+  name = "set-pgp";
   cfg = config.${name};
   path = builtins.toString ./${name}.bash;
   script = pkgs.writeShellScriptBin "${name}" (builtins.readFile path);

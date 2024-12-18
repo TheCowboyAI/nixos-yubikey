@@ -1,6 +1,6 @@
 { lib, config, pkgs, ... }:
 let
-  name = "set-pgp-pins";
+  name = "set-piv";
   cfg = config.${name};
   path = builtins.toString ./${name}.bash;
   script = pkgs.writeShellScriptBin "${name}" (builtins.readFile path);

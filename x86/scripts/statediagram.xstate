@@ -1,0 +1,245 @@
+{
+  id: 'keyManagement',
+  initial: 'createOrgKey',
+  states: {
+    identifyOrganization: {
+      on: {
+        CreateCertifyKey: {
+          target: 'certifyKey',
+          actions: 'createCertifyKey'
+        }
+      }
+    },
+    certifyKey: {
+      on: {
+        QuickGenerateKey: {
+          target: 'generateSubKeys',
+          actions: 'GenerateKey'
+        }
+      }
+    },
+    generateSubKeys: {
+      on: {
+        QuickAddKey: {
+          target: 'addSubKeys',
+          actions: 'AddKey'
+        }
+      }
+    },
+    addSubKeys: {
+      on: {
+        KeyToCard: {
+          target: 'pgpConfiguration',
+          actions: 'keyToCard'
+        }
+      }
+    },
+    pgpConfiguration: {
+      on: {
+        SignCertificate: {
+          target: 'signCertificates',
+          actions: 'signCertificate'
+        }
+      }
+    },
+    signCertificates: {
+      on: {
+        ImportToPIV: {
+          target: 'pivIntegration',
+          actions: 'importToPIV'
+        }
+      }
+    },
+    pivIntegration: {
+      on: {
+        EnableYubikey: {
+          target: 'enableYubikey',
+          actions: 'enableYubikey'
+        }
+      }
+    },
+    enableYubikey: {
+      type: 'final'
+    }
+  }
+}, {
+  actions: {
+    createCertifyKey: (context, event) => {
+      // Logic for creating and certifying the key
+      context.publicKey = 'text';
+      context.privateKey = 'text';
+      context.fingerprint = 'text';
+      context.keyType = 'ed25519';
+    },
+    quickGenerateKey: (context, event) => {
+      // Logic for generating subkeys
+      context.expiration = '1y';
+    },
+    quickAddKey: (context, event) => {
+      // Logic for adding keys
+      context.publicKey = 'cv25519';
+      context.privateKey = 'cv25519';
+    },
+    keyToCard: (context, event) => {
+      // Logic for configuring PGP with keys
+      context.pgpIdentity = 'Example, LLC. <acme@example.org>';
+      context.userPin = 123456;
+      context.adminPin = 12345678;
+    },
+    signCertificate: (context, event) => {
+      // Logic for signing certificates
+      context.rootCA = {
+        privateKey: 'ECC-prime256v1',
+        certificate: 'crt'
+      };
+    },
+    importToPIV: (context, event) => {
+      // Logic for importing keys to PIV
+      context.piv = {
+        pin: 123456,
+        puk: 12345678,
+        key: '012345678012345678012345678012345678'
+      };
+    },
+    enableYubikey: (context, event) => {
+      // Logic for enabling Yubikey
+      context.yubikey = {
+        serial: 'number',
+        retries: context.retries
+      };
+    }
+  }
+}
+
+export default keyManagementMachine;
+import { createMachine } from 'xstate';
+
+const keyManagementMachine = createMachine({
+  id: 'keyManagement',
+  initial: 'createOrganization',
+  context: {
+    orgId: null,
+    publicKey: null,
+    privateKey: null,
+    fingerprint: null,
+    keyType: null,
+    expiration: null,
+    pgpIdentity: null,
+    userPin: null,
+    adminPin: null,
+    rootCA: null,
+    piv: null,
+    yubikey: null,
+    retries: 3
+  },
+  states: {
+    createOrganization: {
+      on: {
+        CreateCertifyKey: {
+          target: 'certifyKey',
+          actions: 'createCertifyKey'
+        }
+      }
+    },
+    certifyKey: {
+      on: {
+        QuickGenerateKey: {
+          target: 'generateSubKeys',
+          actions: 'quickGenerateKey'
+        }
+      }
+    },
+    generateSubKeys: {
+      on: {
+        QuickAddKey: {
+          target: 'addSubKeys',
+          actions: 'quickAddKey'
+        }
+      }
+    },
+    addSubKeys: {
+      on: {
+        KeyToCard: {
+          target: 'pgpConfiguration',
+          actions: 'keyToCard'
+        }
+      }
+    },
+    pgpConfiguration: {
+      on: {
+        SignCertificate: {
+          target: 'signCertificates',
+          actions: 'signCertificate'
+        }
+      }
+    },
+    signCertificates: {
+      on: {
+        ImportToPIV: {
+          target: 'pivIntegration',
+          actions: 'importToPIV'
+        }
+      }
+    },
+    pivIntegration: {
+      on: {
+        EnableYubikey: {
+          target: 'enableYubikey',
+          actions: 'enableYubikey'
+        }
+      }
+    },
+    enableYubikey: {
+      type: 'final'
+    }
+  }
+}, {
+  actions: {
+    createCertifyKey: (context, event) => {
+      // Logic for creating and certifying the key
+      context.publicKey = 'text';
+      context.privateKey = 'text';
+      context.fingerprint = 'text';
+      context.keyType = 'ed25519';
+    },
+    quickGenerateKey: (context, event) => {
+      // Logic for generating subkeys
+      context.expiration = '1y';
+    },
+    quickAddKey: (context, event) => {
+      // Logic for adding keys
+      context.publicKey = 'cv25519';
+      context.privateKey = 'cv25519';
+    },
+    keyToCard: (context, event) => {
+      // Logic for configuring PGP with keys
+      context.pgpIdentity = 'Example, LLC. <acme@example.org>';
+      context.userPin = 123456;
+      context.adminPin = 12345678;
+    },
+    signCertificate: (context, event) => {
+      // Logic for signing certificates
+      context.rootCA = {
+        privateKey: 'ECC-prime256v1',
+        certificate: 'crt'
+      };
+    },
+    importToPIV: (context, event) => {
+      // Logic for importing keys to PIV
+      context.piv = {
+        pin: 123456,
+        puk: 12345678,
+        key: '012345678012345678012345678012345678'
+      };
+    },
+    enableYubikey: (context, event) => {
+      // Logic for enabling Yubikey
+      context.yubikey = {
+        serial: 'number',
+        retries: context.retries
+      };
+    }
+  }
+});
+
+export default keyManagementMachine;

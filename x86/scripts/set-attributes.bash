@@ -1,22 +1,22 @@
-    function eventlog {
-    local evt="$1"
-    echo "$evt" >> "$EVENTLOG"
+jkey() {
+  jq -r ".\"$1\"" <<< $secrets
 }
 
-  YUBIKEY_ID=$(ykman list --serials)
+secrets=$(<"~/secrets.json")
+yubikey_id=$(ykman list --serials)
 
-  gpg --command-fd=0 --pinentry-mode=loopback --edit-card <<EOF
+id="$(jkey org.name) ($(jkey org.id)) <$(jkey org.email)>"
+
+gpg --command-fd=0 --pinentry-mode=loopback --edit-card <<EOF
 admin
-login
-$P_IDENTITY
-$GPG_PIN
+name
+$id
+$gpg_pin
 quit
 EOF
   
-attrevt=$( jq -n \
-    --arg sn "$YUBIKEY_ID" \
-    --arg id "$P_IDENTITY" \
-    "{YubikeyAttributesSet:{yubikey: $sn, identity: $id}}"
-)
-
-eventlog "$attrevt"
+jq -n \
+    --arg sn "$yubikey_id" \
+    --arg name "$id" \
+    "{YubikeyAttributesSet:{yubikey: $sn, name: $name}}" \
+>> "$eventlog"

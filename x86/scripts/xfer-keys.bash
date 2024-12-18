@@ -1,17 +1,13 @@
-function eventlog {
-local evt="$1"
-echo "$evt" >> "$EVENTLOG"
+jkey() {
+  jq -r ".\"$1\"" <<< $secrets
 }
 
-# begin a loop for key(s)...
-savepgp=""
-# exiting on a subsequent yubikey is going to possibly mess up gpg shadow copies, we have to test for that, this is a fairly crude loop
-echo "Will this be the last key?"
-read -n1 lastkey
-
-# we only support 1-5, which you can change as a sanity check
-# currently this may do weird things to the state of gpg-agent if you abort
-savepgp=$([[ "$lastkey" == "Y" || "$lastkey" == "y" ]] && echo "save" || echo "")
+secrets=$(<"~/secrets.json")
+upin="$(jkey pgp.user_pin)"
+upin_old="$(jkey pgp.user_pin_old)"
+apin="$(jkey pgp.admin_pin)"
+apin_old="$(jkey pgp.admin_pin_old)"
+reset_code="$(jkey pgp.reset_code)"
 
 # a hack to force gpg to see a new yubikey when we swap them
 gpg-connect-agent "scd serialno" "learn --force" /bye

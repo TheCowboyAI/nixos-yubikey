@@ -139,17 +139,17 @@ pkgs.writeShellScriptBin "reset-keys" ''
         # Generate a new key on Slot 9a
         echo "Generating new key on PIV Slot 9a..."
 
-        ykman piv generate-key --algorithm RSA2048 --pin-policy "once" --touch-policy "always" 9a public.pem --management-key default
+        ykman piv generate-key --algorithm RSA2048 --pin-policy "once" --touch-policy "always" 9a public.key --management-key default
         echo "Key generated."
 
         # Generate and import a self-signed certificate
         echo "Generating and importing a self-signed certificate..."
 
-        ykman piv generate-certificate --subject "/CN=YubiKey-SSH/" 9a public.pem --pin "$PIV_PIN" --management-key default
+        ykman piv generate-certificate --subject "/CN=YubiKey-SSH/" 9a public.key --pin "$PIV_PIN" --management-key default
         echo "Certificate generated and imported."
 
         # Remove the temporary public key file
-        rm -f public.pem
+        rm -f public.key
 
         # Configure SSH to use the YubiKey
         echo "Configuring SSH to use the YubiKey..."

@@ -1,10 +1,10 @@
-function eventlog {
-  local evt="$1"
-  echo "$evt" >> "$EVENTLOG"
+jkey() {
+  jq -r ".\"$1\"" <<< $secrets
 }
 
-# there isn't anything special for ssl transfers, that is only for gpg getting in the way.
-# there is room for more certs, just repeat for more certs and incerment up to 95
+secrets=$(<"~/secrets.json")
+pin="$(jkey fido.pin)"
+retry="$(jkey fido.retries)"
 
 ykman piv certificates import --subject 82 -m "$MGMT_KEY $COMMON_NAME".crt
 

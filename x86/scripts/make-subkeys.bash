@@ -1,39 +1,41 @@
 # generate Signature, Encryption and Authentication 
-# Subkeys using the previously configured env vars
-# key type, passphrase and expiration
-
-function eventlog {
-  local evt="$1"
-  echo "$evt" >> "$EVENTLOG"
+# Subkeys using the previously created Certify key 
+jkey() {
+  local key="$1" 
+  jq -r ".\"${key}\"" <<< $secrets
 }
 
-gpg --batch --pinentry-mode=loopback --passphrase "$CERTIFY_PASS" \
-  --quick-add-key "$KEYFP" "$KEY_TYPE_AUTH" auth "$EXPIRATION_Y"
+secrets=$(<"~/secrets.json")
+organization="$(jkey org.name)"
+orgid="$(jkey org.id)"
+passphrase="$(jkey org.certify_pass)"
+fp="$(cat ~/certify-$orgid.fingerprint)"
+publickey="$(cat ~/certify-$orgid.public.key)"
+key_type_auth="$(jkey pgp.key_type_auth)"
+key_type_encr="$(jkey pgp.key_type_encr)"
+key_type_sign="$(jkey pgp.key_type_sign)"
+expires="$(jkey pgp.expiration)"
 
-gpg --batch --pinentry-mode=loopback --passphrase "$CERTIFY_PASS" \
-  --quick-add-key "$KEYFP" "$KEY_TYPE_SIGN" sign "$EXPIRATION_Y"
+gpg --batch --pinentry-mode=loopback --passphrase "$passphrase" \
+  --quick-add-key "$fp" "$key_type_auth" auth "$expires"
 
-gpg --batch --pinentry-mode=loopback --passphrase "$CERTIFY_PASS" \
-  --quick-add-key "$KEYFP" "$KEY_TYPE_ENCR" encrypt "$EXPIRATION_Y"
+gpg --batch --pinentry-mode=loopback --passphrase "$passphrase" \
+  --quick-add-key "$fp" "$key_type_sign" sign "$expires"
 
-# Save a copy of the Certify key, Subkeys and Public key
-# we use these to copy to backup yubikeys 
-gpg --output $GNUPGHOME/$KEYID-subkeys.pem \
-    --batch --pinentry-mode=loopback --passphrase "$CERTIFY_PASS" \
-    --armor --export-secret-subkeys $KEYID
+gpg --batch --pinentry-mode=loopback --passphrase "$passphrase" \
+  --quick-add-key "$fp" "$key_type_encr" encrypt "$expires"
 
-cp $GNUPGHOME/$KEYID-subkeys.pem ~
+# Save a copy of the Subkeys
+gpg --output ~/$orgid-$publickey-subkeys.key \
+    --batch --pinentry-mode=loopback --passphrase "$passphrase" \
+    --armor --export-secret-subkeys $publickey
 
-gpg --output $GNUPGHOME/$KEYID-$(date +%F).pub \
-    --armor --export $KEYID
+gpg --output ~/$orgid-$publickey.pub \
+    --armor --export $publickey
 
-cp $GNUPGHOME/$KEYID-$(date +%F).pub ~
-
-subkeyevt=$( jq -n \
-  --arg keyid "$KEYID" \
-  --arg pubkey $(cat $GNUPGHOME/$KEYID-$(date +%F).pub) \
-  --arg subkeys "$(jc $(cat $GNUPGHOME/$KEYID-subkeys.pem))" \ 
-  "{GpgSubkeysCreated: {keyid: $keyid, public-key: $key, subkeys: $subkeys}}"
-)
-
-eventlog "$subkeyevt"
+jq -n \
+  --arg org $orgid \
+  --arg pubkey $(cat ~/$orgid-$publickey.pub) \
+  --arg subkeys "$(jc $(cat ~/$publickey-subkeys.key))" \ 
+  "{GpgSubkeysCreated: {org: $org, publickey: $pubkey, keys: $subkeys}"
+>>>$eventlog

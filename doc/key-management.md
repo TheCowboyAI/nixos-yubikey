@@ -52,6 +52,7 @@
    - **Key Creation and Distribution**:
      - Certify Keys and derived keys are created by security personnel in a controlled environment.
      - YubiKeys are provisioned with required keys and distributed to authorized users securely.
+     - Only revocable public keys are distributed.
      - Vaultwarden is the primary user interface
    - **Renewal and Revocation**:
      - Schedule and track key renewal dates.
@@ -59,6 +60,7 @@
    - **Backup and Recovery**:
      - Back up all Certify Keys and critical derived keys.
      - Utilize secure, encrypted storage for key backups.
+     - Projections of certain keys are made for import to Security systems such as IdPs and SSO.
    - **Monitoring and Auditing**:
      - Regularly review logs for key usage and access attempts.
      - Perform audits to verify adherence to key management policies and identify any irregularities.
@@ -70,3 +72,5 @@
      - NATS (Messaging) and JWT (REST Authorization) will ensure robust message and access security across systems.
    - **TLS/SSL & X.509**:
      - Ensure secure communication channels through the use of strong TLS protocols and X.509 certificates.
+
+**Note on privacy**: Keyservers are fully public by design, meaning they inherently expose potentially sensitive information about you, such as your full name, aliases, and personal or professional email addresses. When you sign someone else's key or others sign yours, keyservers also reveal your social connections. Once personal information is uploaded to keyservers, it cannot be edited or removed. Revoking a signature or identity does not delete it from the key record; it merely marks it as revoked, which may draw additional attention to it.

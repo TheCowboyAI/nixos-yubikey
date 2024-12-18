@@ -43,9 +43,10 @@ graph TD
 
 #### 1. **Organization Level (Root)**
    - **Certify Key (Master/Root Key)**:  
-     - Held securely in a Yubikey, stored offline.
+     - Held offline... **NOT ON THE YUBIKEY**, this is a non-expiring, non-revocable key, it is ONLY used to generate other keys.
      - Used to certify **Subordinate Keys** for both the organization and individuals.
      - Responsible for certifying newly issued or replacement keys for the organization or individuals.
+     - If this key is ever used in a live environment, red flags and alarms should go off.
 
    - **Subordinate Keys Derived from Certify Key**:
      - **Signing Key** (held on Yubikey):

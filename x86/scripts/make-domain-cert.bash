@@ -1,67 +1,46 @@
-function eventlog {
-  local evt="$1"
-  echo "$evt" >> "$EVENTLOG"
-}
+source jkey
 
-# sanity check //todo
-# if !$COMMON_NAME||!$COMMON_NAME||$COUNTRY then
-#   //exit asking to set env
-# end if
+expires="$(jkey ssl.expiration)"
+org_name="$(jkey org.name)"
+orgid="$(jkey org.id)"
+common_name="$(jkey ssl.common_name)"
+country="$(jkey org.country)"
+region="$(jkey org.region)"
+locality="$(jkey org.locality)"
+email="$(jkey org.email)"
+key_type_ssl="$(jkey ssl.key_type)"
+dir="/root/ca/intermediate"
 
 # create private key for wildcard cert
-openssl ecparam -name $KEY_TYPE_SSL -genkey -noout -out wildcard.$COMMON_NAME.pem
-
-# create the wildcard certificate signing request (csr)
-openssl req -new -key wildcard.$COMMON_NAME.pem \
--subj "/C=$COUNTRY/ST=$REGION/L=$LOCALITY/O=$ORG_NAME/CN=*.$COMMON_NAME/emailAddress=$EMAIL" \
--out wildcard.$COMMON_NAME.csr
-
-csrevt=$( jq -n \
---arg csr "$(cat wildcard.$COMMON_NAME.csr)" \
-"{WildcardCsrCreated: {wildcard-csr: $csr}}")
-eventlog "$csrevt"
-
-wildcard."$COMMON_NAME".csr.conf<<EOF
-[req]
-distinguished_name = req_distinguished_name
-req_extensions = v3_req
-prompt = no
-
-[req_distinguished_name]
-C = $COUNTRY
-ST = $REGION
-L = $LOCALITY
-O = $ORG_NAME
-emailAddress = $EMAIL
-CN = *.$COMMON_NAME
-
-[v3_req]
-keyUsage = nonRepudiation, digitalSignature, keyEncipherment, dataEncipherment
-extendedKeyUsage = serverAuth
-subjectAltName = @alt_names
-
-[alt_names]
-DNS.1 = $COMMON_NAME
-DNS.2 = *.$COMMON_NAME
-EOF
-
-# Sign the CSR with the Root CA to generate the wildcard certificate
-openssl x509 -req -in wildcard.$COMMON_NAME.csr \
--CA $COMMON_NAME.crt \
--CAkey wildcard.$COMMON_NAME.pem \
--CAcreateserial \
--out wildcard.$COMMON_NAME.crt -days $EXPIRATION_D \
--extfile wildcard.$COMMON_NAME.cnf -extensions v3_req
+openssl ecparam -name $key_type_ssl \
+  -genkey \
+  -noout \
+  -out $dir/private/wildcard.$common_name.private.key
 
 # export its pubkey
-openssl pkey -in wildcard.$COMMON_NAME.pem -pubout -out wildcard.$COMMON_NAME.pub
+openssl pkey \
+  -in $dir/private/wildcard.$common_name.private.key \
+  -pubout \
+  -out $dir/wildcard.$common_name.public.key
 
-signevt=$( jq -n \
---arg pubkey "$(cat wildcard.$COMMON_NAME.pub)" \
---arg privkey "$(cat wildcard.$COMMON_NAME.pem)" \
---arg crt "$(cat wildcard.$COMMON_NAME.crt)" \
---arg cnf "$(cat wildcard.$COMMON_NAME.cnf)" \
-"{WildcardCertificateCreated: {public-key: $pubkey, private-key: $privkey, certificate: $crt, confirmation: $cnf}}"
-)
+# create the wildcard certificate signing request (csr)
+openssl req -config $dir/openssl.cnf \
+    -key $dir/private/wildcard.$common_name.private.key \
+    -new -$keytype_ssl \
+    -out $dir/csr/wildcard.$common_name.csr \
 
-eventlog "$signevt"
+# create the cert
+openssl ca -config $dir/openssl.cnf \
+  -extensions server_cert \
+  -days 375 \ 
+  -notext \
+  -md $key_type_ssl \
+  -in $dir/csr/wildcard.$common_name.csr \
+  -out $dir/certs/wildcard.$common_name.crt
+
+jq -n \
+--arg pubkey "$(cat $dir/wildcard.$common_name.public.key)" \
+--arg privkey "$(cat $dir/private/wildcard.$common_name.private.key)" \
+--arg crt "$(cat $dir/certs/wildcard.$common_name.crt)" \
+"{WildcardCertificateCreated: {publickey: $pubkey, privatekey: $privkey, certificate: $crt}}" \
+>> "$eventlog"
