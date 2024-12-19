@@ -1,6 +1,3 @@
 jkey() {
-  local key="$1" 
-  jq -r ".\"${key}\"" <<< $secrets
+  jq -r "$1" <<< $secrets
 }
-
-secrets=$(<"./secrets.json")

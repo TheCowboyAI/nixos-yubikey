@@ -3,8 +3,8 @@ jkey() {
 }
 
 secrets=$(<"~/secrets.json")
-pin="$(jkey fido.pin)"
-retry="$(jkey fido.retries)"
+pin="$(jq -r .fido.pin)"
+retry="$(jq -r .fido.retries)"
 
   # Change PIV PIN and PUK
   ykman piv change-pin --pin "$DEFAULT_PIN" --new-pin "$PIV_PIN" 

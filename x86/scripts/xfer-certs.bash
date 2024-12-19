@@ -3,8 +3,8 @@ jkey() {
 }
 
 secrets=$(<"~/secrets.json")
-pin="$(jkey fido.pin)"
-retry="$(jkey fido.retries)"
+pin="$(jq -r .fido.pin)"
+retry="$(jq -r .fido.retries)"
 
 ykman piv certificates import --subject 82 -m "$MGMT_KEY $COMMON_NAME".crt
 

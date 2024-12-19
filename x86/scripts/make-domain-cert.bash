@@ -1,14 +1,14 @@
-source jkey
 
-expires="$(jkey org.yubikey.ssl.expiration)"
-org_name="$(jkey org.name)"
-orgid="$(jkey org.id)"
-common_name="$(jkey org.yubikey.ssl.common_name)"
-country="$(jkey org.country)"
-region="$(jkey org.region)"
-locality="$(jkey org.locality)"
-email="$(jkey org.email)"
-key_type_ssl="$(jkey org.yubikey.ssl.key_type)"
+
+expires="$(jq -r .org.yubikey.ssl.expiration <<< $secrets)"
+org_name="$(jq -r .org.name <<< $secrets)"
+orgid="$(jq -r .org.id <<< $secrets)"
+common_name="$(jq -r .org.yubikey.ssl.common_name <<< $secrets)"
+country="$(jq -r .org.country <<< $secrets)"
+region="$(jq -r .org.region <<< $secrets)"
+locality="$(jq -r .org.locality <<< $secrets)"
+email="$(jq -r .org.email <<< $secrets)"
+key_type_ssl="$(jq -r .org.yubikey.ssl.key_type <<< $secrets)"
 dir="/ca/intermediate"
 
 # create private key for wildcard cert

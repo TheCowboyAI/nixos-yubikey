@@ -1,4 +1,4 @@
-source jkey
+
 # see: https://openssl-ca.readthedocs.io/en/latest/create-the-root-pair.html
 
 # variables
@@ -6,26 +6,26 @@ cadir="/var/ca"
 gpgdir="/var/gpg"
 org_publickey="$(cat $gpgdir/certify-$orgid.public.key)"
 org_privatekey="$(cat $gpgdir/private/certify-$orgid.private.key)"
-expires="$(jkey org.yubikey.ssl.expiration)"
-org_name="$(jkey org.name)"
-orgid="$(jkey org.id)"
-common_name="$(jkey org.yubikey.ssl.common_name)"
-country="$(jkey org.country)"
-region="$(jkey org.region)"
-locality="$(jkey org.locality)"
-email="$(jkey org.email)"
-key_type_auth="$(jkey org.yubikey.pgp.key_type_auth)"
-key_type_encr="$(jkey org.yubikey.pgp.key_type_encr)"
-key_type_sign="$(jkey org.yubikey.pgp.key_type_sign)"
-key_type_ssl="$(jkey org.yubikey.ssl.key_type)"
+expires="$(jq -r .org.yubikey.ssl.expiration <<< $secrets)"
+org_name="$(jq -r .org.name <<< $secrets)"
+orgid="$(jq -r .org.id <<< $secrets)"
+common_name="$(jq -r .org.yubikey.ssl.common_name <<< $secrets)"
+country="$(jq -r .org.country <<< $secrets)"
+region="$(jq -r .org.region <<< $secrets)"
+locality="$(jq -r .org.locality <<< $secrets)"
+email="$(jq -r .org.email <<< $secrets)"
+key_type_auth="$(jq -r .org.yubikey.pgp.key_type_auth <<< $secrets)"
+key_type_encr="$(jq -r .org.yubikey.pgp.key_type_encr <<< $secrets)"
+key_type_sign="$(jq -r .org.yubikey.pgp.key_type_sign <<< $secrets)"
+key_type_ssl="$(jq -r .org.yubikey.ssl.key_type <<< $secrets)"
 
 # defining this eliminates guesswork of cli options and holds a file
-$dir/openssl.cnf<<EOF
+$cadir/openssl.cnf<<EOF
 [ ca ]
 default_ca = CA_default
 
 [ CA_default ]
-dir = $dir
+dir = $cadir
 certs = \$dir/certs
 crl_dir = \$dir/crl
 database = \$dir/index.txt
@@ -140,9 +140,9 @@ keyUsage               = critical, digitalSignature
 extendedKeyUsage       = critical, OCSPSigning
 EOF 
 
-$dir/intermediate/openssl.cnf<<EOF
+$cadir/intermediate/openssl.cnf<<EOF
 [ CA_default ]
-dir         = $dir/intermediate
+dir         = $cadir/intermediate
 private_key = \$dir/private/$common_name.authca.private.key
 certificate = \$dir/certs/$common_name.authca.crt
 crl         = \$dir/crl/$common_name.authca.crl
@@ -195,13 +195,13 @@ EOF
 # create root ca private key
 openssl ecparam -name $key_type_ssl -genkey \
   -noout \
-  -out $dir/private/$common_name.rootca.private.key
+  -out $cadir/private/$common_name.rootca.private.key
 
 # export it's public key
 openssl pkey \
-  -in $dir/private/$common_name.rootca.private.key \
+  -in $cadir/private/$common_name.rootca.private.key \
   -pubout \
-  -out $dir/$common_name.rootca.public.key
+  -out $cadir/$common_name.rootca.public.key
 
 # create root ca
 openssl req \
@@ -209,29 +209,29 @@ openssl req \
   -days 7300 \
   -$key_type_ssl \
   -extensions v3_ca \
-  -config $dir/openssl.cnf \
-  -key $dir/private/$common_name.rootca.private.key \
-  -out $dir/certs/$common_name.rootca.crt
+  -config $cadir/openssl.cnf \
+  -key $cadir/private/$common_name.rootca.private.key \
+  -out $cadir/certs/$common_name.rootca.crt
 
 jq -c \
---arg pubkey "$(cat $dir/$common_name.rootca.public.key)" \
---arg privkey "$(cat $dir/private/$common_name.rootca.private.key)" \
---arg cert $(cat $dir/certs/$common_name.rootca.crt) \
+--arg pubkey "$(cat $cadir/$common_name.rootca.public.key)" \
+--arg privkey "$(cat $cadir/private/$common_name.rootca.private.key)" \
+--arg cert $(cat $cadir/certs/$common_name.rootca.crt) \
 --arg kt $key_type_ssl \
-". + {RootCACertificateCreated: {publickey: $pubkey, privatekey: $privkey, certificate: $cert, key-type: $kt}}" \
+"{RootCACertificateCreated: {publickey: $pubkey, privatekey: $privkey, certificate: $cert, key-type: $kt}}" \
 >> "$eventlog"
 
 # create intermediate ca private key
 openssl ecparam \
   -name $key_type_ssl -genkey \
   -noout \
-  -out $dir/intermediate/private/$common_name.authca.private.key
+  -out $cadir/intermediate/private/$common_name.authca.private.key
 
 # export it's public key
 openssl pkey \
-  -in $dir/intermediate/private/$common_name.authca.private.key \
+  -in $cadir/intermediate/private/$common_name.authca.private.key \
   -pubout \
-  -out $dir/intermediate/$common_name.authca.public.key
+  -out $cadir/intermediate/$common_name.authca.public.key
 
 # create auth ca
 openssl req \
@@ -239,18 +239,18 @@ openssl req \
   -days $expiration \
   -$key_type_ssl \
   -extensions v3_ca \
-  -config $dir/intermediate/openssl.cnf \
-  -key $dir/intermediate/private/$common_name.authca.private.key \
-  -out $dir/intermediate/certs/$common_name.authca.crt
+  -config $cadir/intermediate/openssl.cnf \
+  -key $cadir/intermediate/private/$common_name.authca.private.key \
+  -out $cadir/intermediate/certs/$common_name.authca.crt
 
 # create signing chain (what we distribute)
-cat $dir/intermediate/certs/$common_name.authca.crt $dir/certs/$common_name.rootca.crt > \
-    intermediate/certs/$common_name.ca-chain.crt
+cat $cadir/intermediate/certs/$common_name.authca.crt $cadir/certs/$common_name.rootca.crt > \
+    $cadir/intermediate/certs/$common_name.ca-chain.crt
 
 jq -c \
---arg pubkey "$(cat $dir/intermediate/$common_name.authca.public.key)" \
---arg privkey "$(cat $dir/intermediate/private/$common_name.authca.private.key)" \
---arg cert $(cat $dir/intermediate/certs/$common_name.authca.crt) \
+--arg pubkey "$(cat $cadir/intermediate/$common_name.authca.public.key)" \
+--arg privkey "$(cat $cadir/intermediate/private/$common_name.authca.private.key)" \
+--arg cert $(cat $cadir/intermediate/certs/$common_name.authca.crt) \
 --arg kt $key_type_ssl \
 ". + {AuthCACertificateCreated: {publickey: $pubkey, privatekey: $privkey, certificate: $cert, key-type: $kt}}" \
 >> "$eventlog"

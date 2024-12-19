@@ -1,15 +1,13 @@
-source jkey
-
 # set model
 dir="/var/gpg"
-passphrase="$(jkey org.certify_pass)"
-org="$(jkey org.name)"
-orgid="$(jkey org.id)"
-key_type="$(jkey org.yubikey.pgp.key_type_auth)"
-email="$(jkey org.email)"
+passphrase="$(jq -r .org.certify_pass <<< $secrets)"
+org="$(jq -r .org.name <<< $secrets)"
+orgid="$(jq -r .org.id <<< $secrets)"
+key_type="$(jq -r .org.yubikey.pgp.key_type_auth <<< $secrets)"
+email="$(jq -r .org.email <<< $secrets)"
 
 ### Create a Certify Key (always held offline)
-identity="$org <$email> ($orgid)"
+identity="$org <$email> ($orgid <<< $secrets)"
 
 # create a new private key
 gpg --batch \

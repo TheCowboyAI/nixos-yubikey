@@ -1,14 +1,14 @@
-source jkey
 
-org_name="$(jkey org.name)"
-orgid="$(jkey org.id)"
-country="$(jkey org.country)"
-region="$(jkey org.region)"
-locality="$(jkey org.locality)"
-emails="$(jkey .people[].email)"
-common_name="$(jkey org.yubikey.ssl.common_name)"
-key_type="$(jkey org.yubikey.ssl.key_type)"
-expires="$(jkey org.yubikey.ssl.expiration)"
+
+org_name="$(jq -r .org.name <<< $secrets)"
+orgid="$(jq -r .org.id <<< $secrets)"
+country="$(jq -r .org.country <<< $secrets)"
+region="$(jq -r .org.region <<< $secrets)"
+locality="$(jq -r .org.locality <<< $secrets)"
+emails="$(jq -r ..people[].email <<< $secrets)"
+common_name="$(jq -r .org.yubikey.ssl.common_name <<< $secrets)"
+key_type="$(jq -r .org.yubikey.ssl.key_type <<< $secrets)"
+expires="$(jq -r .org.yubikey.ssl.expiration <<< $secrets)"
 $dir="/ca/intermediate"
 
 # clients for people with emails

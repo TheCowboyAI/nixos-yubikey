@@ -94,5 +94,5 @@
   && echo 1000 > /var/ca/intermediate/crlnumber \
   && echo 1000 > /var/ca/intermediate/serial
   '';
-
+  system.userActivationScripts.secrets = "export secrets=$(<'/home/yubikey/secrets.json')";
 }

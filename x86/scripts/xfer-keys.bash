@@ -3,11 +3,11 @@ jkey() {
 }
 
 secrets=$(<"~/secrets.json")
-upin="$(jkey pgp.user_pin)"
-upin_old="$(jkey pgp.user_pin_old)"
-apin="$(jkey pgp.admin_pin)"
-apin_old="$(jkey pgp.admin_pin_old)"
-reset_code="$(jkey pgp.reset_code)"
+upin="$(jq -r .pgp.user_pin)"
+upin_old="$(jq -r .pgp.user_pin_old)"
+apin="$(jq -r .pgp.admin_pin)"
+apin_old="$(jq -r .pgp.admin_pin_old)"
+reset_code="$(jq -r .pgp.reset_code)"
 
 # a hack to force gpg to see a new yubikey when we swap them
 gpg-connect-agent "scd serialno" "learn --force" /bye

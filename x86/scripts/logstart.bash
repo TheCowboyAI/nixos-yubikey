@@ -1,3 +1,2 @@
-source jkey
 eventlog="yubikey.eventlog.cowboyai.json"
-echo "Logging has begun" >> $eventlog
+echo "Logging has begun" > $eventlog

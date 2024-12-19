@@ -3,8 +3,8 @@ jkey() {
 }
 
 secrets=$(<"~/secrets.json")
-pin="$(jkey fido.pin)"
-retry="$(jkey fido.retries)"
+pin="$(jq -r .fido.pin)"
+retry="$(jq -r .fido.retries)"
 
 ykman fido access change-pin --new-pin "$pin"
 ykman fido access set-pin-retries --pin-retries "$retry" --uv-retries "$retry" --pin "$pin"

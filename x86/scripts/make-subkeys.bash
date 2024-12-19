@@ -1,17 +1,17 @@
 # generate Signature, Encryption and Authentication 
 # Subkeys using the previously created Certify key 
-source jkey
+
 
 dir="/var/gpg"
-organization="$(jkey org.name)"
-orgid="$(jkey org.id)"
-passphrase="$(jkey org.certify_pass)"
+organization="$(jq -r .org.name <<< $secrets)"
+orgid="$(jq -r .org.id <<< $secrets)"
+passphrase="$(jq -r .org.certify_pass <<< $secrets)"
 fp="$(cat $dir/fp/certify-$orgid.fingerprint)"
 publickey="$(cat $dir/certify-$orgid.public.key)"
-key_type_auth="$(jkey org.yubikey.pgp.key_type_auth)"
-key_type_encr="$(jkey org.yubikey.pgp.key_type_encr)"
-key_type_sign="$(jkey org.yubikey.pgp.key_type_sign)"
-expires="$(jkey pgp.expiration)"
+key_type_auth="$(jq -r .org.yubikey.pgp.key_type_auth <<< $secrets)"
+key_type_encr="$(jq -r .org.yubikey.pgp.key_type_encr <<< $secrets)"
+key_type_sign="$(jq -r .org.yubikey.pgp.key_type_sign <<< $secrets)"
+expires="$(jq -r .pgp.expiration <<< $secrets)"
 
 gpg --batch \
   --pinentry-mode=loopback \

@@ -5,7 +5,7 @@ jkey() {
 secrets=$(<"~/secrets.json")
 yubikey_id=$(ykman list --serials)
 
-id="$(jkey org.name) ($(jkey org.id)) <$(jkey org.email)>"
+id="$(jq -r .org.name) ($(jq -r .org.id)) <$(jq -r .org.email)>"
 
 gpg --command-fd=0 --pinentry-mode=loopback --edit-card <<EOF
 admin
