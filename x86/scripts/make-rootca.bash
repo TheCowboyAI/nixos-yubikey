@@ -1,28 +1,23 @@
 source jkey
 # see: https://openssl-ca.readthedocs.io/en/latest/create-the-root-pair.html
 
-# set paths
-mkdir -p $dir/{certs,crl,serial,private,intermediate/{certs crl csr private}}
-echo 1000 > $dir/intermediate/crlnumber
-echo 1000 > $dir/intermediate/serial
-touch index.txt
-
 # variables
-org_publickey="$(cat ~/certify-$orgid.public.key)"
-org_privatekey="$(cat ~/certify-$orgid.private.key)"
-expires="$(jkey ssl.expiration)"
+cadir="/var/ca"
+gpgdir="/var/gpg"
+org_publickey="$(cat $gpgdir/certify-$orgid.public.key)"
+org_privatekey="$(cat $gpgdir/private/certify-$orgid.private.key)"
+expires="$(jkey org.yubikey.ssl.expiration)"
 org_name="$(jkey org.name)"
 orgid="$(jkey org.id)"
-common_name="$(jkey ssl.common_name)"
+common_name="$(jkey org.yubikey.ssl.common_name)"
 country="$(jkey org.country)"
 region="$(jkey org.region)"
 locality="$(jkey org.locality)"
 email="$(jkey org.email)"
-key_type_auth="$(jkey pgp.key_type_auth)"
-key_type_encr="$(jkey pgp.key_type_encr)"
-key_type_sign="$(jkey pgp.key_type_sign)"
-key_type_ssl="$(jkey ssl.key_type)"
-dir="/root/ca"
+key_type_auth="$(jkey org.yubikey.pgp.key_type_auth)"
+key_type_encr="$(jkey org.yubikey.pgp.key_type_encr)"
+key_type_sign="$(jkey org.yubikey.pgp.key_type_sign)"
+key_type_ssl="$(jkey org.yubikey.ssl.key_type)"
 
 # defining this eliminates guesswork of cli options and holds a file
 $dir/openssl.cnf<<EOF
@@ -43,7 +38,7 @@ certificate      = \$dir/certs/$common_name.rootca.crt
 
 # For certificate revocation lists.
 crlnumber        = \$dir/crlnumber
-crl              = \$dir/crl/$common_name.rootca.crl.pem
+crl              = \$dir/crl/$common_name.rootca.crl
 crl_extensions   = crl_ext
 default_crl_days = 30
 

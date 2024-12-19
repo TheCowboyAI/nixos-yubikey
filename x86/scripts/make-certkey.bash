@@ -1,51 +1,42 @@
-# sanity check
-checkvars
+source jkey
 
 # set model
+dir="/var/gpg"
 passphrase="$(jkey org.certify_pass)"
 org="$(jkey org.name)"
 orgid="$(jkey org.id)"
-key_type="$(jkey pgp.key_type_auth)"
-
-# validate or die
-# List of required variables
-required_vars=("passphrase" "org" "orgid" "key_type")
-
-# Check each variable
-for var in "${required_vars[@]}"; do
-    if [ -z "${!var}" ]; then
-        echo "Error: $var is not set."
-        exit 1
-    fi
-done
+key_type="$(jkey org.yubikey.pgp.key_type_auth)"
+email="$(jkey org.email)"
 
 ### Create a Certify Key (always held offline)
-# since this an automated process,
-# Identity should be acme@common_name, see: https://en.wikipedia.org/wiki/Automatic_Certificate_Management_Environment
+identity="$org <$email> ($orgid)"
 
 # create a new private key
 gpg --batch \
     --passphrase "$passphrase" \
-    --quick-generate-key "$org" "$key_type" \
+    --quick-generate-key "$identity" "$key_type" \
     cert never
 
 # output it to file parts
-publickey=$(gpg -k --with-colons "$org" | awk -F: '/^pub:/ { print $5; exit }')
-echo publickey > ~/certify-$orgid.public.key
+publickey=$(gpg -k --with-colons "$identity" | awk -F: '/^pub:/ { print $5; exit }')
+echo publickey > $dir/certify-$orgid.public.key
 
-fingerprint=$(gpg -k --with-colons "$org" | awk -F: '/^fpr:/ { print $10; exit }')
-echo fingerprint > ~/certify-$orgid.fingerprint
+fingerprint=$(gpg -k --with-colons "$identity" | awk -F: '/^fpr:/ { print $10; exit }')
+echo fingerprint > $dir/fp/certify-$orgid.fingerprint
 
-gpg --output ~/certify-$orgid.private.key \
-    --batch --pinentry-mode=loopback --passphrase "$passphrase" \
-    --armor --export-secret-keys $publickey
+gpg --output $dir/private/certify-$orgid.private.key \
+    --batch \
+    --pinentry-mode=loopback \
+    --passphrase "$passphrase" \
+    --armor \
+    --export-secret-keys $publickey
 
 jq -n \
     --arg org "$org" \
     --arg id "$orgid" \
     --arg pubkey "$publickey" \
     --arg fp "$fingerprint" \
-    --arg privkey "$(cat ~/certify-$orgid.private.key)" \
+    --arg privkey "$(cat $dir/private/certify-$orgid.private.key)" \
     --arg pass "$passphrase" \
     --arg ktype "$key_type" \
     '{GpgCertifyKeyCreated: {
@@ -66,3 +57,6 @@ unset passphrase
 unset org
 unset org_id
 unset key_type
+unset identity
+unset email
+unset dir

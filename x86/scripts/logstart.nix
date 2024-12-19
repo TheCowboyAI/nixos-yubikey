@@ -1,6 +1,6 @@
 { lib, config, pkgs, ... }:
 let
-  name = "edit-env";
+  name = "logstart";
   cfg = config.${name};
   path = builtins.toString ./${name}.bash;
   script = pkgs.writeShellScriptBin "${name}" (builtins.readFile path);

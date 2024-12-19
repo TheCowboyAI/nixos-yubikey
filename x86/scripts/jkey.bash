@@ -3,4 +3,4 @@ jkey() {
   jq -r ".\"${key}\"" <<< $secrets
 }
 
-secrets=$(<"~/secrets.json")
+secrets=$(<"./secrets.json")

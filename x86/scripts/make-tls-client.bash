@@ -6,11 +6,12 @@ country="$(jkey org.country)"
 region="$(jkey org.region)"
 locality="$(jkey org.locality)"
 emails="$(jkey .people[].email)"
-common_name="$(jkey ssl.common_name)"
-key_type="$(jkey ssl.key_type)"
-expires="$(jkey ssl.expiration)"
-$dir="/root/ca/intermediate"
+common_name="$(jkey org.yubikey.ssl.common_name)"
+key_type="$(jkey org.yubikey.ssl.key_type)"
+expires="$(jkey org.yubikey.ssl.expiration)"
+$dir="/ca/intermediate"
 
+# clients for people with emails
 for email in $emails; do
   # create the private key  
   openssl ecparam -name $key_type -genkey \
@@ -43,7 +44,7 @@ for email in $emails; do
     -inkey $dir/private/$email.tlsclient.$common_name.private.key \
     -in $dir/certs/$email.tlsclient.$common_name.crt \
     -certfile $dir/certs/$common_name.authca.crt \
-    -certfile /root/ca/certs/$common_name.rootca.crt
+    -certfile /ca/certs/$common_name.rootca.crt
 
   jq -n \
     --arg pubkey $(cat $dir/$email.tlsclient.$common_name.public.key) \

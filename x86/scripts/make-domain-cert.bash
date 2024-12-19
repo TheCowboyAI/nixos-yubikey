@@ -1,15 +1,15 @@
 source jkey
 
-expires="$(jkey ssl.expiration)"
+expires="$(jkey org.yubikey.ssl.expiration)"
 org_name="$(jkey org.name)"
 orgid="$(jkey org.id)"
-common_name="$(jkey ssl.common_name)"
+common_name="$(jkey org.yubikey.ssl.common_name)"
 country="$(jkey org.country)"
 region="$(jkey org.region)"
 locality="$(jkey org.locality)"
 email="$(jkey org.email)"
-key_type_ssl="$(jkey ssl.key_type)"
-dir="/root/ca/intermediate"
+key_type_ssl="$(jkey org.yubikey.ssl.key_type)"
+dir="/ca/intermediate"
 
 # create private key for wildcard cert
 openssl ecparam -name $key_type_ssl \

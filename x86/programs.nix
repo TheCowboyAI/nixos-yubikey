@@ -1,5 +1,30 @@
 { pkgs, ... }:
 {
+  # modules
+  enable-fido.enable = true;
+  completely-reset-my-yubikey.enable = true;
+  enable-pgp-touch.enable = true;
+  enable-piv-touch.enable = true;
+  logstart.enable = true;
+  jkey.enable = true;
+  make-certkey.enable = true;
+  make-domain-cert.enable = true;
+  make-rootca.enable = true;
+  make-subkeys.enable = true;
+  make-tls-client.enable = true;
+  random-6.enable = true;
+  random-8.enable = true;
+  random-mgmt-key.enable = true;
+  random-pass.enable = true;
+  set-attributes.enable = true;
+  set-fido.enable = true;
+  set-oauth.enable = true;
+  set-pgp.enable = true;
+  set-piv.enable = true;
+  set-yubikey.enable = true;
+  xfer-certs.enable = true;
+  xfer-keys.enable = true;
+
   # System packages
   environment.systemPackages = with pkgs; [
     cryptsetup
@@ -15,6 +40,7 @@
     pwgen
     gpg-tui
     openssh
+    openssl
     jq
     jc
     glow
@@ -33,6 +59,9 @@
 
   services.pcscd.enable = true;
   services.yubikey-agent.enable = true;
+
+  programs.yubikey-touch-detector.enable = true;
+  programs.yubikey-touch-detector.libnotify = true;
 
   programs.gnupg = {
     dirmngr.enable = true;
@@ -57,6 +86,13 @@
     };
 
     histSize = 10000;
-    loginShellInit = "source ~/.env";
+    loginShellInit = "";
   };
+  system.userActivationScripts.zshrc = "touch .zshrc";
+  system.userActivationScripts.ca = ''
+  touch /var/ca/index.txt \
+  && echo 1000 > /var/ca/intermediate/crlnumber \
+  && echo 1000 > /var/ca/intermediate/serial
+  '';
+
 }

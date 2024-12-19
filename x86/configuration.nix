@@ -1,4 +1,4 @@
-{ lib, config, pkgs, modulesPath, ... }:
+{ lib, pkgs, modulesPath, ... }:
 
 {
   system.stateVersion = "24.05";
@@ -12,6 +12,8 @@
       "${modulesPath}/profiles/hardened.nix"
       ./hardware-configuration.nix
       ./disko.nix
+      ./programs.nix
+      ./scripts
     ];
 
   boot.kernelParams = [ ];
@@ -53,54 +55,6 @@
 
   services.openssh.enable = lib.mkForce false;
 
-  # System packages
-  environment.systemPackages = with pkgs; [
-    cryptsetup
-    git
-    gitAndTools.git-extras
-    gnupg
-    age
-    pcsclite
-    pcsctools
-    pgpdump
-    pinentry-curses
-    pwgen
-    gpg-tui
-    openssh
-
-    yubikey-manager
-    yubikey-manager-qt
-    yubikey-personalization
-    #yubikey-personalization-qt
-    #yubikey-touch-detector
-    #yubikey-agent
-    age-plugin-yubikey
-    piv-agent
-
-    (import ./reset-keys.nix { inherit pkgs; })
-    (import ./test-keys.nix { inherit pkgs; })
-  ];
-
-  services.udev.packages = [
-    pkgs.yubikey-personalization
-  ];
-
-  services.pcscd.enable = true;
-
-  programs.zsh = {
-    enable = true;
-    enableCompletion = true;
-    autosuggestions.enable = true;
-    syntaxHighlighting.enable = true;
-    shellAliases = {
-      ll = "ls -la";
-    };
-
-    histSize = 10000;
-
-    loginShellInit = "";
-  };
-
   security.sudo.wheelNeedsPassword = false;
 
   users.users.yubikey = {
@@ -109,6 +63,6 @@
     hashedPassword = "$6$z4glAe5PkxpsXOOU$KyX75c.WfktMoP28c5Tssj9VW/tO7lhlWMCuPanu9YRXp2kLMt8q51r6LVKC3R75E04SKXEvJ2LOo2F92sfGj.";
     shell = pkgs.zsh;
   };
-
+  
   services.getty.autologinUser = lib.mkForce "yubikey";
 }

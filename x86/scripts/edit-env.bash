@@ -1,1 +1,0 @@
-micro /home/yubikey/.env

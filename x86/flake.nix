@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-24.05";
+    nixpkgs.url = "nixpkgs/nixos-24.11";
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
   };
@@ -50,8 +50,6 @@
           glow
 
           yubikey-manager
-          yubikey-manager-qt
-          yubikey-personalization
           age-plugin-yubikey
           piv-agent
         ];

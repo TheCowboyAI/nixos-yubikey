@@ -1,5 +1,6 @@
 # are you sure? :-)
 # as this implies, it will kill your yubikey.
+LOGFILE="reset.log"
 
 function log {
     local msg="$1"
@@ -46,3 +47,6 @@ log "config-reset-completed: $sn"
 
 # test everything is set to defaults
 # test-isDefault
+unset $LOGFILE
+unset $YUBIKEY_ID
+unset $sn
