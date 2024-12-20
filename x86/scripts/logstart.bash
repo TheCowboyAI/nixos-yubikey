@@ -1,2 +1,2 @@
-eventlog="yubikey.eventlog.cowboyai.json"
+export eventlog="yubikey.eventlog.cowboyai.json"
 echo "Logging has begun" > $eventlog

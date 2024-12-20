@@ -20,7 +20,7 @@ key_type_sign="$(jq -r .org.yubikey.pgp.key_type_sign <<< $secrets)"
 key_type_ssl="$(jq -r .org.yubikey.ssl.key_type <<< $secrets)"
 
 # defining this eliminates guesswork of cli options and holds a file
-$cadir/openssl.cnf<<EOF
+cat > "$cadir/openssl.cnf" <<EOF
 [ ca ]
 default_ca = CA_default
 
@@ -140,7 +140,7 @@ keyUsage               = critical, digitalSignature
 extendedKeyUsage       = critical, OCSPSigning
 EOF 
 
-$cadir/intermediate/openssl.cnf<<EOF
+cat > "$cadir/intermediate/openssl.cnf" <<EOF
 [ CA_default ]
 dir         = $cadir/intermediate
 private_key = \$dir/private/$common_name.authca.private.key

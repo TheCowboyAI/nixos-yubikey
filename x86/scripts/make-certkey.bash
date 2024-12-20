@@ -37,16 +37,8 @@ jq -n \
     --arg privkey "$(cat $dir/private/certify-$orgid.private.key)" \
     --arg pass "$passphrase" \
     --arg ktype "$key_type" \
-    '{GpgCertifyKeyCreated: {
-        org: {name: $org, id: $id},
-        key: {
-            passphrase: $pass,
-            keytype: $ktype,
-            publickey: $pubkey,
-            fingerprint: $fp,
-            privatekey: $privkey
-        }
-    }}' >> "$eventlog"
+    '{"GpgCertifyKeyCreated":{"org":{"name":"$org","id":"$id"},"key":{"passphrase":"$pass","keytype":"$ktype","publickey":"$pubkey","fingerprint":"$fp","privatekey":"$privkey"}}}' \
+    >> "$eventlog"
 
 
 #cleanup

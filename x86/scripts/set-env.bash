@@ -1,1 +1,1 @@
-export secrets=$(</home/yubikey/secrets.json)
+export secrets="$(</home/yubikey/secrets.json)"

@@ -17,6 +17,7 @@
   random-mgmt-key.enable = true;
   random-pass.enable = true;
   set-attributes.enable = true;
+  set-env.enable = true;
   set-fido.enable = true;
   set-oauth.enable = true;
   set-pgp.enable = true;
