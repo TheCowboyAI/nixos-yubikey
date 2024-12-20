@@ -17,6 +17,7 @@
     ./random-mgmt-key.nix
     ./random-pass.nix
     ./set-attributes.nix
+    ./set-env.nix
     ./set-fido.nix
     ./set-oauth.nix
     ./set-pgp.nix

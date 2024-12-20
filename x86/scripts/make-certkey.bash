@@ -7,7 +7,7 @@ key_type="$(jq -r .org.yubikey.pgp.key_type_auth <<< $secrets)"
 email="$(jq -r .org.email <<< $secrets)"
 
 ### Create a Certify Key (always held offline)
-identity="$org <$email> ($orgid <<< $secrets)"
+identity="$org <$email> ($orgid)"
 
 # create a new private key
 gpg --batch \
